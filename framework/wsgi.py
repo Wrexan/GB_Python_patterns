@@ -6,24 +6,20 @@ from url import links
 
 
 class WSGI:
-    # def __init__(self):
-    # self.views = views
-    # self.links = links
-    # views = Views.view
-    # links = links
 
-    def app(self, environ, start_response):
+    def app(self, environ: dict, start_response, front_controllers: tuple):
+        response = None
         req = Request(environ)
-        # links = links
-        # print(f'{links=}')
-        # print(f'{self.links=}')
+
+    # front_controller
+        for front in front_controllers:
+            response = front(req, self.generate_answer, start_response)
+        return response if response else [b'404']
+
+    # page_controller
+    def generate_answer(self, start_response, req):
         if req.method == 'GET':
-            # print(f'{req.headers=}')
-            # print(f'{req.body.read()=}')
             for url, method in links.items():
-                # print(f'{url=} {method=} ')
                 if req.path == url:
                     start_response('200 OK', [('Content-Type', 'text/html')])
-                    # print(f'{method()=}')
                     return [bytes(f'{method()}', encoding='utf-8')]
-        return [b'404']
