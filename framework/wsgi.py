@@ -22,15 +22,13 @@ class WSGI:
 
         # Call front_controllers if registered
         if self.m_wares:
-            # Pre front controllers
-            for front in self.m_wares:
+            for front in self.m_wares:  # Pre front controllers
                 self.response = front(self.m_ware, self.request, self.response, self.responser, True)
             # If middleware does not change status - generate answer
             # Else use middleware status
             # print(f'{self.responser.status=}')
             self.response = self.generate_answer()
-            # Post front controllers
-            for front in self.m_wares:
+            for front in self.m_wares:  # Post front controllers
                 self.response = front(self.m_ware, self.request, self.response, self.responser, False)
         else:
             self.response = self.generate_answer()

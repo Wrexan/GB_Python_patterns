@@ -1,12 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <style>
+            body {
+                padding-top: 2rem;
+                padding-bottom: 110px;
+                background-color: rgb(196, 210, 219);
+                margin: 0;
+            }
+            div.header, footer{
+                color: lightgray;
+                width: 100%;
+                background-color: rgb(46, 60, 69);
+                padding: 1rem;
+            }
+            div.header {
+                position: fixed;
+                text-align: center;
+                top: 0;
+            }
+            footer {
+                text-align: center;
+                bottom: 0;
+                position: fixed;
+            }
+            h1 {
+                text-align: center;
+            }
+            a.b {
+                font-weight: bold;
+                color: lightgray;
+                text-decoration-line: underline;
+            }
+            p.links {
+                background-color: rgb(46, 60, 69);
+                padding: 1rem;
+                text-align: center;
+            }
+            div.text{
+                align: center;
+                width: 800px;
+                overflow: auto;
+                margin: auto;
+            }
+            i{
+                margin: 1rem;
+            }
+        </style>
         <meta charset="UTF-8">
-        <title>Test site. Main page</title>
+
+        <title>Лучшие курсы на свете</title>
     </head>
     <body>
-        {{nav_bar.html}}
+        <div class="header">
+            {{nav_bar.html}}
+        </div>
         <p>
         {{content}}
     </body>
+    <footer>
+        <p>Me © 2022</p>
+    </footer>
 </html>
