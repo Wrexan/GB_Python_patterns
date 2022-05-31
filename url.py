@@ -5,5 +5,6 @@ links = {
     '/': v.index,
     '/index': v.index,
     '/about': v.about,
+    '/courses': v.courses,
     '/contacts': v.contacts
 }
