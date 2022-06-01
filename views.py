@@ -58,7 +58,8 @@ def courses(request):
                                                 'edu_line3': db_get_line(3)['name'],
                                                 'course': courses_of_line,
                                                 'course_page': 'course_page.html',
-                                                'course_form': 'course_form.html'},
+                                                'course_form': 'course_form.html',
+                                                'first_form_id': 1},
                                  request.query_params["edu_line"])
             if 'course_page' in request.query_params:
                 course = db_get_course(request.query_params["course_page"])

@@ -10,10 +10,10 @@ class View:
         self.frontend_vars = frontend_vars
         self.deepness = deepness
 
-    def view(self, page_file: str = 'index.html', injections=None, params=None):
+    def view(self, page_file: str = 'index.html', injections=None, query_params=None):
         if injections is None:
             injections = {}
-        if params is None:
+        if query_params is None:
             params = {}
         try:
             with open(f'{self.frontend_path}{page_file}', 'r') as file:
@@ -21,7 +21,7 @@ class View:
             # Заменяем переменные на содержимое из внешних файлов
             # if injections:
             #     for inj_name, inj_file in injections.items():
-            data = self._just_inject_in_that_file(data, injections, params, page_file)
+            data, _ = self._just_inject_in_that_file(data, injections, query_params, page_file)
             # data = self._just_inject_that_file(data, inj_name, inj_file)
             # Заменяем переменные на ссылки пользователя
             for var, link in self.frontend_vars.items():
@@ -34,11 +34,12 @@ class View:
         return data
 
     # Костыли с рекурсией. Нагугленные способы импорта на сервере не работают
-    def _just_inject_in_that_file(self, data, injections, params, file, num: int = 0):
+    def _just_inject_in_that_file(self, html_data, injections, query_params, file, num: int = 0):
         try:
+            stopper = 0
             layer = 0
             inj_end = 0
-            data = str(data) if isinstance(data, int) else data
+            data = str(html_data) if isinstance(html_data, int) else html_data
             # num = 0
             # key = ''
             while layer < self.deepness:
@@ -54,25 +55,44 @@ class View:
                         continue
                     # inj_end = inj_start + 2
                     # print(f'{inj_var=} {inj_start=} {inj_end=}')
-                    # cycle_pos = inj_var.find('*')
-                    # if cycle_pos >= 0:  # If * found, then injection will repeat
-                    #     cycle_end = data.find('{{*}}', inj_end)
-                    #     cycles = int(inj_var[:cycle_pos])
-                    #     cycle_var = inj_var[inj_repeat + 1:]
-                    #
-                    #     # print(f'{inj_repeat=}')
-                    #     new_inj_var = inj_var[:inj_repeat]
-                    #     # print(f'{inj_var=}')
-                    #     inj_repeat = int(inj_var[inj_repeat + 1:])
-                    #     # print(f'{inj_repeat=}')
-                    #     inj_var = new_inj_var
+                    cycle_pos = inj_var.find('*')
+                    if cycle_pos >= 0:  # If * found, then injection will repeat
+                        cycle_end = data.find('{{*}}', inj_end)
+                        cycle_data = data[inj_end + 2:cycle_end]
+                        cycles = int(inj_var[cycle_pos + 1:])
+                        cycle_var = inj_var[:cycle_pos]
+                        if cycle_var.isdigit():
+                            cycle_var = int(cycle_var)
+                        elif cycle_var in injections.keys():
+                            cycle_var = injections[cycle_var]
+                        cycles_data = ''
+
+                        # print(f'{inj_var=} {cycles=} {cycle_var=} {cycle_data=} ')
+                        for i in range(0, cycles):
+                            # print(f'cycle start: {i}  id:{cycle_var + i}')
+                            cd, stopper = self._just_inject_in_that_file(cycle_data, injections, query_params,
+                                                                        file, cycle_var + i)
+                            # print(f'cycle end: {i} {cd=} {stopper=}')
+                            cycles_data += cd
+                            if stopper:
+                                break
+                            # cycles_data += cycle_data
+                            # print(f'cycle end: {i} {cycle_data=}')
+                        # print(f'CYCLES ENDED: {cycles_data=}')
+
+                        inj_end = cycle_end + 3
+                        data = data[:inj_start] + cycles_data + data[inj_end + 2:]
+                        # print(f'CYCLES ENDED: {data=}')
+
+
+                        continue
                     inj_arg, key = None, None
                     # if injections:
                     if inj_var in injections.keys():
                         inj_arg = injections[inj_var]
                     else:
                         dot_pos = inj_var.find(':')
-                        if dot_pos >= 0:  # If . found, then injection parse dict
+                        if dot_pos >= 0:  # If : found, then injection parse dict
                             obj = inj_var[:dot_pos]
                             key = inj_var[dot_pos + 1:]
                             # print(f'{key=} {arg=}')
@@ -81,9 +101,13 @@ class View:
                                 inj_arg = injections[obj]
                                 # print(f'{inj_arg=}')
                         dot_pos = inj_var.find('#')
-                        if dot_pos >= 0:  # If . found, then injection parse dict
+                        if dot_pos >= 0:  # If # found, then get number
                             obj = inj_var[:dot_pos]
-                            num = int(inj_var[dot_pos + 1:])
+                            repeater = inj_var[dot_pos + 1:]
+                            if repeater.isdigit():
+                                num = int(inj_var[dot_pos + 1:])
+                            # elif repeater in injections.keys():
+                            #     num = injections[repeater]
                             # print(f'{key=} {num=}')
                             if obj in injections.keys():
                                 # print(f'{injections=}')
@@ -101,10 +125,12 @@ class View:
                             else:
                                 inj_data = inj_arg
                         elif isinstance(inj_arg, list):
-                            if num < len(inj_arg):
-                                # print(f'{num=} {inj_arg[num]["id"]=}')
-                                inj_data = inj_arg[num][key]
-                                # print(f'{inj_arg[num][arg]=}')
+                            if num <= len(inj_arg):
+                                # print(f'{num=} {len(inj_arg)=} {inj_arg[num - 1]["id"]=}')
+                                inj_data = inj_arg[num - 1][key]
+                                if num == len(inj_arg):
+                                    stopper = 1
+                            # print(f'{inj_arg[num][arg]=}')
                             else:
                                 inj_data = ''
 
@@ -124,9 +150,9 @@ class View:
                         inj_data = ''
                         # raise Exception
                         # continue
-
+                    # if inj_data != '':
                     if layer < self.deepness:
-                        inj_data = self._just_inject_in_that_file(inj_data, injections, params, file, num)
+                        inj_data, _ = self._just_inject_in_that_file(inj_data, injections, query_params, file, num)
                     data = data[:inj_start] + inj_data + data[inj_end + 2:]
                     # print(f'{data =}')
                     # print(f'{inj_var=} {inj_file=}')
@@ -135,8 +161,8 @@ class View:
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(f'{fname}[{exc_tb.tb_lineno}]ERROR: while parsing view: ({file=}) {e}')
-        return data
+            print(f'{fname}[{exc_tb.tb_lineno}]ERROR: while parsing view: ({file}) {e}')
+        return data, stopper
 
     def _open_file(self, path):
         with open(path, 'r') as file:
