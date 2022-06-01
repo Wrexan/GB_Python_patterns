@@ -4,18 +4,25 @@ FRONTEND_PATH = 'frontend/'
 
 # Global vars. Will be changed for text in all pages.
 # Useful for links.
-FRONTEND_VARS = {
+FRONTEND_CONST = {
     '%index%': '"/index"',
     '%about%': '"/about"',
     '%courses%': '"/courses"',
-    '%contacts%': '"/contacts"'
+    '%contacts%': '"/contacts"',
+}
+# Objects visible only for admin
+FRONTEND_ADMIN_VARS = {
+    '%admin_page%': '"/admin_page"',
+    '%admin_panel%': 'Админка'
 }
 # How many page layers need injections. Default = 1. Deeper is slower.
 # 0: page in index
 # 1: page in page in index
 DEEPNESS = 2
 
-Home = View(FRONTEND_PATH, FRONTEND_VARS, DEEPNESS)
+Home = View(FRONTEND_PATH, FRONTEND_CONST, FRONTEND_ADMIN_VARS, DEEPNESS)
+
+Home.is_admin = True
 
 
 def index(request):
@@ -91,5 +98,15 @@ def contacts(request):
     elif request.method == 'POST':
         page = Home.view('index.html', {'content': 'contacts.html'})
         print(f'==Got {request.method=} {request.query_params=} {request.body=}')
+    return page
+
+
+def admin(request):
+    page = f'unsupported method {request.method}'
+    if request.method == 'GET':
+        page = Home.view('index.html', {'content': 'admin_page.html'})
+    # elif request.method == 'POST':
+    #     page = Home.view('index.html', {'content': 'admin_page.html'})
+    #     print(f'==Got {request.method=} {request.query_params=} {request.body=}')
     return page
 
