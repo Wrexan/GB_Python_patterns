@@ -1,7 +1,12 @@
-import sys, os
+import os
+import sys
+from time import time
+from functools import wraps
 
 
 class View:
+    views = {}
+
     def __init__(self,
                  frontend_path: str = 'frontend',
                  frontend_vars: dict = None,
@@ -21,12 +26,9 @@ class View:
         try:
             with open(f'{self.frontend_path}{page_file}', 'r') as file:
                 data = file.read().replace('\n', '').replace('    ', ' ')
-            # Заменяем переменные на содержимое из внешних файлов
-            # if injections:
-            #     for inj_name, inj_file in injections.items():
+            # Заменяем {{переменные}} и циклы на содержимое из внешних файлов
             data, _ = self._just_inject_in_that_file(data, injections, query_params, page_file)
-            # data = self._just_inject_that_file(data, inj_name, inj_file)
-            # Заменяем переменные на ссылки пользователя
+            # Заменяем %константы% на константы пользователя
             for var, link in self.frontend_vars.items():
                 data = data.replace(var, link)
             for var, link in self.frontend_admin_vars.items():
@@ -39,8 +41,9 @@ class View:
             return page_file
         return data
 
-    # Костыли с рекурсией. Нагугленные способы импорта на сервере не работают
-    def _just_inject_in_that_file(self, html_data, injections, query_params, file, num: int = 0):
+    # Рекурсивно-костыльный шаблонизатор. С JINJA не разбирался, интересно было написать свой
+    def _just_inject_in_that_file(self, html_data, injections, query_params,
+                                  file, num: int = 0):
         try:
             stopper = 0
             layer = 0
@@ -73,7 +76,7 @@ class View:
                         for i in range(0, cycles):
                             # print(f'cycle start: {i}  id:{cycle_var + i}')
                             cd, stopper = self._just_inject_in_that_file(cycle_data, injections, query_params,
-                                                                        file, cycle_var + i)
+                                                                         file, cycle_var + i)
                             cycles_data += cd
                             if stopper:
                                 break
@@ -142,10 +145,12 @@ class View:
                     elif inj_var[-5:] == '.html':  # If not variable, then filename
                         inj_data = self._open_file(f'{self.frontend_path}{inj_var}')
                     else:
-                        print(f'ATTENTION: unused var: ({inj_var=}) in ({file if isinstance(file, str) else "injection"})')
+                        print(
+                            f'ATTENTION: unused var: ({inj_var=}) in ({file if isinstance(file, str) else "injection"})')
                         inj_data = ''
                     if layer < self.deepness:
-                        inj_data, _ = self._just_inject_in_that_file(inj_data, injections, query_params, file, num)
+                        inj_data, _ = self._just_inject_in_that_file(inj_data, injections, query_params,
+                                                                     file, num)
                     data = data[:inj_start] + inj_data + data[inj_end + 2:]
                     # print(f'{data =}')
                     # print(f'{inj_var=} {inj_file=}')
@@ -164,3 +169,20 @@ class View:
     def path(self, file_name: str):
         return f'{self.frontend_path}{file_name}'
 
+
+def app(url: str = ''):
+    def route(func: type):
+        View.views[url] = func
+        return func
+    return route
+
+
+def debug(func):
+    @wraps(func)
+    def decor(*args, **kwargs):
+        start_time = time()
+        result = func(*args, **kwargs)
+        print(f'Execution: "{func.__module__}->{func.__name__}" Time taken: {(time() - start_time).__round__(6)}')
+        return result
+
+    return decor

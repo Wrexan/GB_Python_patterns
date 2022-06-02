@@ -1,4 +1,4 @@
-from framework.views import View
+from framework.views import View, app, debug
 from database import db_get_line, db_get_lines, db_get_course, db_get_courses_by_line
 FRONTEND_PATH = 'frontend/'
 
@@ -18,13 +18,14 @@ FRONTEND_ADMIN_VARS = {
 # How many page layers need injections. Default = 1. Deeper is slower.
 # 0: page in index
 # 1: page in page in index
-DEEPNESS = 2
+DEEPNESS = 1
 
 Home = View(FRONTEND_PATH, FRONTEND_CONST, FRONTEND_ADMIN_VARS, DEEPNESS)
 
 Home.is_admin = True
 
 
+@app('/index')
 def index(request):
     page = f'unsupported method {request.method}'
     if request.method == 'GET':
@@ -35,6 +36,8 @@ def index(request):
     return page
 
 
+@app('/about')
+@debug
 def about(request):
     page = f'unsupported method {request.method}'
     if request.method == 'GET':
@@ -45,6 +48,7 @@ def about(request):
     return page
 
 
+@debug
 def courses(request):
     page = f'unsupported method {request.method}'
     if request.method == 'GET':
