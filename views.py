@@ -1,5 +1,6 @@
 from framework.views import View, app, debug
-from database import db_get_line, db_get_lines, db_get_course, db_get_courses_by_line
+from database import db_get_line, db_get_lines, db_get_course, db_get_courses_by_line, db_count_curses_in_line
+
 FRONTEND_PATH = 'frontend/'
 
 # Global vars. Will be changed for text in all pages.
@@ -52,43 +53,67 @@ def about(request):
 def courses(request):
     page = f'unsupported method {request.method}'
     if request.method == 'GET':
+        print(f'GET {request.query_params=}')
+        line = '0'
+        curr_line = 'Выберите направление обучения'
         if request.query_params is None:
-            page = Home.view('index.html', {'content': 'courses_page.html',
-                                            'edu_line1': db_get_line(1)['name'],
-                                            'edu_line2': db_get_line(2)['name'],
-                                            'edu_line3': db_get_line(3)['name'],
-                                            'courses': 'courses_invitation.html'})
+            pass
         else:
-            if 'edu_line' in request.query_params:
-                courses_of_line = db_get_courses_by_line(request.query_params["edu_line"])
-                # print(f'{courses_of_line=}')
-                page = Home.view('index.html', {'content': 'courses_page.html',
-                                                'courses': 'courses.html',
-                                                'edu_line1': db_get_line(1)['name'],
-                                                'edu_line2': db_get_line(2)['name'],
-                                                'edu_line3': db_get_line(3)['name'],
-                                                'course': courses_of_line,
-                                                'course_page': 'course_page.html',
-                                                'course_form': 'course_form.html',
-                                                'first_form_id': 1},
-                                 request.query_params["edu_line"])
             if 'course_page' in request.query_params:
                 course = db_get_course(request.query_params["course_page"])
                 # print(f'{course=}')
                 page = Home.view('index.html', {'content': 'course_page.html',
                                                 'course': course},
                                  request.query_params["course_page"])
-            if 'enroll_course' in request.query_params:
+                return page
+
+            elif 'enroll_course' in request.query_params:
                 course = db_get_course(request.query_params["enroll_course"])
                 print(f'Клиент записан на {course["name"]}')
                 page = Home.view('index.html', {'content': 'thank_for_enroll.html',
                                                 'course': course})
-                # page = Home.view('index.html', {'content': 'courses_page.html',
-                #                                 'edu_line1': db_get_line(1)['name'],
-                #                                 'edu_line2': db_get_line(2)['name'],
-                #                                 'edu_line3': db_get_line(3)['name'],
-                #                                 'course': course,
-                #                                 'courses': 'thank_for_enroll.html'})
+                return page
+
+            if 'line' in request.query_params:
+                line = request.query_params["line"]
+                curr_line = db_get_line(line)
+                curr_line = curr_line['name'] if curr_line else ''
+            else:
+                line = '0'
+        # print(f'{line=}')
+        # print(f'{db_count_curses_in_line(line)=}')
+        page = Home.view('index.html', {'content': 'form_page.html',
+                                        'forms': 'forms.html',
+                                        'curr_line': curr_line,
+                                        'lines': db_get_lines(line),
+                                        'courses_in': db_count_curses_in_line(line),
+                                        'course': db_get_courses_by_line(line),
+                                        'form_page': 'form_page.html',
+                                        'line_form': 'line_form.html',
+                                        'course_form': 'course_form.html',
+                                        'page': 0},
+                         request.query_params)
+        return page
+        # if 'edu_line' in request.query_params:
+        #     courses_of_line = db_get_courses_by_line(request.query_params["edu_line"])
+        #     # print(f'{courses_of_line=}')
+        #     page = Home.view('index.html', {'content': 'courses_page.html',
+        #                                     'courses': 'courses.html',
+        #                                     'edu_line1': db_get_line(1)['name'],
+        #                                     'edu_line2': db_get_line(2)['name'],
+        #                                     'edu_line3': db_get_line(3)['name'],
+        #                                     'course': courses_of_line,
+        #                                     'course_page': 'course_page.html',
+        #                                     'course_form': 'course_form.html',
+        #                                     'first_form_id': 1},
+        #                      request.query_params["edu_line"])
+
+        # page = Home.view('index.html', {'content': 'courses_page.html',
+        #                                 'edu_line1': db_get_line(1)['name'],
+        #                                 'edu_line2': db_get_line(2)['name'],
+        #                                 'edu_line3': db_get_line(3)['name'],
+        #                                 'course': course,
+        #                                 'courses': 'thank_for_enroll.html'})
     elif request.method == 'POST':
         page = Home.view('courses.html')
         print(f'==Got {request.method=} {request.query_params=} {request.body=}')
@@ -113,4 +138,3 @@ def admin(request):
     #     page = Home.view('index.html', {'content': 'admin_page.html'})
     #     print(f'==Got {request.method=} {request.query_params=} {request.body=}')
     return page
-
