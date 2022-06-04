@@ -1,5 +1,6 @@
 from framework.views import View, app, debug
-from database import db_get_line, db_get_lines, db_get_course, db_get_courses_by_line, db_count_curses_in_line
+from database import db_get_line, db_get_lines, db_get_course, db_get_courses_by_line, db_count_curses_in_line,\
+    db_count_curses_in_line_new, db_precount_courses_for_lines
 
 FRONTEND_PATH = 'frontend/'
 
@@ -22,6 +23,7 @@ FRONTEND_ADMIN_VARS = {
 DEEPNESS = 1
 
 Home = View(FRONTEND_PATH, FRONTEND_CONST, FRONTEND_ADMIN_VARS, DEEPNESS)
+db_precount_courses_for_lines()
 
 Home.is_admin = True
 
@@ -86,7 +88,7 @@ def courses(request):
                                         'forms': 'forms.html',
                                         'curr_line': curr_line,
                                         'lines': db_get_lines(line),
-                                        'courses_in': db_count_curses_in_line(line),
+                                        'courses_in': db_count_curses_in_line_new(line),
                                         'course': db_get_courses_by_line(line),
                                         'form_page': 'form_page.html',
                                         'line_form': 'line_form.html',

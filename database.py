@@ -50,16 +50,40 @@ def db_get_course_amt_by_line(line) -> int:
     return count
 
 
+def db_precount_courses_for_lines():
+    for line in database_course_lines:
+        line['courses_in'] = db_get_course_amt_by_line(line["id"])
+        line['courses_in'] += db_count_curses_in_line_new(line['id'])
+
+
+def db_count_curses_in_line_new(id):
+    all_db_parent_ids = list(set([elem["parent"] for elem in database_course_lines]))  # "set" gets all unique ids
+    counter = 0
+    # sublevel_ids = []
+
+    def recoursive(id):
+        nonlocal counter
+        for line in database_course_lines:
+            if line["parent"] == id:
+                counter += db_get_course_amt_by_line(line["id"])
+                current_id = line["id"]
+                # sublevel_ids.append(current_id)
+                if current_id in all_db_parent_ids:
+                    recoursive(current_id)
+        return counter#, sublevel_ids
+    return recoursive(id)
+
 def db_count_curses_in_line(id: int, amt: int = 0) -> int:
     id = _to_int(id)
-    # amt += db_get_course_amt_by_line(id)
+
     # print(f'{amt=} {id=}')
     for line in database_course_lines:
         # print(f'FOUND:{line["parent"]=} ANS:{amt=}')
         if line['parent'] == id:
-            # print(f'FOUND:{line["id"]} ANS:{id}')
-            # amt += db_count_curses_in_line(line['id'], amt)
-            amt += db_get_course_amt_by_line(line["id"])
+            print(f'FOUND:{line["id"]} ANS:{id}')
+            amt += db_count_curses_in_line(line['id'], amt)
+            # amt += db_get_course_amt_by_line(line["id"])
+    amt += db_get_course_amt_by_line(id)
     # print(f'{amt=}')
     return amt
 
@@ -86,32 +110,32 @@ database_course_types = (
 
 
 database_course_lines = (
-    {'id': 1, 'parent': 0, 'name': 'Программирование'},
-    {'id': 2, 'parent': 0, 'name': 'Электроника'},
-    {'id': 3, 'parent': 0, 'name': 'Учимся жить'},
+    {'id': 1, 'parent': 0, 'courses_in': 0, 'name': 'Программирование'},
+    {'id': 2, 'parent': 0, 'courses_in': 0, 'name': 'Электроника'},
+    {'id': 3, 'parent': 0, 'courses_in': 0, 'name': 'Учимся жить'},
 
-    {'id': 4, 'parent': 1, 'name': 'Базовые знания'},
-    {'id': 13, 'parent': 1, 'name': 'Логика'},
-    {'id': 5, 'parent': 1, 'name': 'Языки высокого уровня'},
-    {'id': 6, 'parent': 1, 'name': 'Языки низкого уровня'},
+    {'id': 4, 'parent': 1, 'courses_in': 0, 'name': 'Базовые знания'},
+    {'id': 13, 'parent': 1, 'courses_in': 0, 'name': 'Логика'},
+    {'id': 5, 'parent': 1, 'courses_in': 0, 'name': 'Языки высокого уровня'},
+    {'id': 6, 'parent': 1, 'courses_in': 0, 'name': 'Языки низкого уровня'},
 
-    {'id': 14, 'parent': 5, 'name': 'Python'},
-    {'id': 15, 'parent': 5, 'name': 'Java'},
-    {'id': 16, 'parent': 5, 'name': 'JavaScript'},
-    {'id': 17, 'parent': 5, 'name': 'Kotlin'},
+    {'id': 14, 'parent': 5, 'courses_in': 0, 'name': 'Python'},
+    {'id': 15, 'parent': 5, 'courses_in': 0, 'name': 'Java'},
+    {'id': 16, 'parent': 5, 'courses_in': 0, 'name': 'JavaScript'},
+    {'id': 17, 'parent': 5, 'courses_in': 0, 'name': 'Kotlin'},
 
-    {'id': 18, 'parent': 6, 'name': 'Assembler'},
-    {'id': 19, 'parent': 6, 'name': 'C'},
-    {'id': 20, 'parent': 6, 'name': 'C++'},
+    {'id': 18, 'parent': 6, 'courses_in': 0, 'name': 'Assembler'},
+    {'id': 19, 'parent': 6, 'courses_in': 0, 'name': 'C'},
+    {'id': 20, 'parent': 6, 'courses_in': 0, 'name': 'C++'},
 
 
-    {'id': 7, 'parent': 2, 'name': 'Базовые элементы и понятия'},
-    {'id': 8, 'parent': 2, 'name': 'Схемотехника'},
-    {'id': 9, 'parent': 2, 'name': 'Ремонт электроники'},
+    {'id': 7, 'parent': 2, 'courses_in': 0, 'name': 'Базовые элементы и понятия'},
+    {'id': 8, 'parent': 2, 'courses_in': 0, 'name': 'Схемотехника'},
+    {'id': 9, 'parent': 2, 'courses_in': 0, 'name': 'Ремонт электроники'},
 
-    {'id': 10, 'parent': 3, 'name': 'Добрые дела'},
-    {'id': 11, 'parent': 3, 'name': 'Выгодные дела'},
-    {'id': 12, 'parent': 3, 'name': 'Безделье'},
+    {'id': 10, 'parent': 3, 'courses_in': 0, 'name': 'Добрые дела'},
+    {'id': 11, 'parent': 3, 'courses_in': 0, 'name': 'Выгодные дела'},
+    {'id': 12, 'parent': 3, 'courses_in': 0, 'name': 'Безделье'},
 )
 
 database_courses = (
@@ -149,5 +173,26 @@ database_courses = (
         'id': 7, 'line': 11, 'name': 'Как заработать миллион за 15 минут', 'img': 'img:777', 'type': 2,
         'short': 'Обучает как быстро заработать и перейти на курс ничегонеделанья',
         'text': 'После прохождения данного курса вы больше не сможете купить другие курсы'
+    },
+    {
+        'id': 8, 'line': 14, 'name': 'Основы Python', 'img': 'img:69', 'type': 2,
+        'short': 'Обучает всякой всячине',
+        'text': 'После прохождения данного курса вы больше не сможете сесть за другие языки'
+    },
+    {
+        'id': 9, 'line': 14, 'name': 'Продвинутый Питон', 'img': 'img:96', 'type': 2,
+        'short': 'Обучает как типизировать руками, магическим методам и type-ам мира сия',
+        'text': 'После прохождения данного курса вы сможете превращать 5 строк в 1.'
+                'Но придется превращать 5 строк в 10 классов.'
+    },
+    {
+        'id': 10, 'line': 18, 'name': 'Как полюбить регистры', 'img': 'img:AX BX CX DX', 'type': 2,
+        'short': 'Обучает как не заработать клаустрофобию в стеке',
+        'text': 'После прохождения данного курса вы больше не сможете 1101 0110 1100'
+    },
+    {
+        'id': 11, 'line': 19, 'name': 'Поход в музей', 'img': 'img:BORLAND', 'type': 2,
+        'short': 'Исторический курс',
+        'text': 'После прохождения данного курса вам стоит пройти Паскаль'
     },
 )
