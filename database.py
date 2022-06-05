@@ -41,7 +41,7 @@ def db_get_courses_by_line(line):
 
 
 def db_get_course_amt_by_line(line) -> int:
-    line = _to_int(line)
+    # line = _to_int(line)
     count = 0
     for elem in database_courses:
         if elem['line'] == line:
@@ -50,10 +50,9 @@ def db_get_course_amt_by_line(line) -> int:
     return count
 
 
-def db_precount_courses_for_lines():
-    for line in database_course_lines:
-        line['courses_in'] = db_get_course_amt_by_line(line["id"])
-        line['courses_in'] += db_count_curses_in_line_new(line['id'])
+# def db_precount_courses_for_lines():
+#     for line in database_course_lines:
+#         line['courses_in'] += db_count_curses_in_line(line['id'])
 
 
 def db_count_curses_in_line_new(id):
@@ -73,20 +72,44 @@ def db_count_curses_in_line_new(id):
         return counter#, sublevel_ids
     return recoursive(id)
 
-def db_count_curses_in_line(id: int, amt: int = 0) -> int:
-    id = _to_int(id)
 
-    # print(f'{amt=} {id=}')
+# def db_precount_courses_for_lines():
+    # for line in database_course_lines:
+        # line['courses_in'] += db_count_curses_in_line(line['id'])
+
+
+    # def db_count_curses_in_line(id: int = 0, amt: int = 0) -> int:
+    # # def db_count_curses_in_line(id: int, amt: int = 0) -> int:
+    #     # id = _to_int(id)
+    #     # print(f'NAME: {id} AMT:{amt}')
+    #     for line in database_course_lines:
+    #         if line['parent'] == id:
+    #             amt_in_dother = db_get_course_amt_by_line(line["id"])
+    #             amt += db_count_curses_in_line(line['id'], amt_in_dother)
+    #             line['courses_in'] = amt_in_dother #+ amt
+    #             print(f'NAME: {line["name"]} AMT:{amt} AMT_D:{amt_in_dother}')
+    #     return amt
+    #
+    # db_count_curses_in_line()
+    #
+    # # for line in database_course_lines:
+    # #         line['courses_in'] += db_count_curses_in_line(line['id'])
+
+def db_precount_courses_for_lines():
+
+    def db_count_curses_in_branch(_id: int = 0, amt: int = 0) -> int:
+        for lin in database_course_lines:
+            if lin['parent'] == _id:
+                amt += db_count_curses_in_branch(lin['id'], lin['courses_in'])
+                # print(f'NAME: {line["name"]} AMT:{amt} courses_in:{line["courses_in"]}')
+        return amt
+
     for line in database_course_lines:
-        # print(f'FOUND:{line["parent"]=} ANS:{amt=}')
-        if line['parent'] == id:
-            print(f'FOUND:{line["id"]} ANS:{id}')
-            amt += db_count_curses_in_line(line['id'], amt)
-            # amt += db_get_course_amt_by_line(line["id"])
-    amt += db_get_course_amt_by_line(id)
-    # print(f'{amt=}')
-    return amt
-
+        amt_d = db_get_course_amt_by_line(line["id"])
+        line['courses_in'] = amt_d
+        # print(f'PRE -- NAME: {line["name"]} AMT_D:{amt_d}')
+    for line in database_course_lines:
+        line['courses_in'] += db_count_curses_in_branch(line['id'])
 
 def db_get_type(id):
     # id = _to_int(id)
@@ -186,13 +209,29 @@ database_courses = (
                 'Но придется превращать 5 строк в 10 классов.'
     },
     {
-        'id': 10, 'line': 18, 'name': 'Как полюбить регистры', 'img': 'img:AX BX CX DX', 'type': 2,
+        'id': 10, 'line': 14, 'name': 'Бог Питона', 'img': 'img:8', 'type': 2,
+        'short': 'Обучает познанию сути всего',
+        'text': 'После прохождения данного курса вы сможете написать "Hello World" '
+                'без использования абстрактных классов.'
+    },
+    {
+        'id': 11, 'line': 18, 'name': 'Как полюбить регистры', 'img': 'img:AX BX CX DX', 'type': 2,
         'short': 'Обучает как не заработать клаустрофобию в стеке',
         'text': 'После прохождения данного курса вы больше не сможете 1101 0110 1100'
     },
     {
-        'id': 11, 'line': 19, 'name': 'Поход в музей', 'img': 'img:BORLAND', 'type': 2,
+        'id': 12, 'line': 19, 'name': 'Поход в музей', 'img': 'img:BORLAND', 'type': 2,
         'short': 'Исторический курс',
         'text': 'После прохождения данного курса вам стоит пройти Паскаль'
+    },
+    {
+        'id': 13, 'line': 1, 'name': 'История программирования', 'img': 'img:АРИФМОМЕТР', 'type': 2,
+        'short': 'Исторический курс как человечество пришло к созданию первого языка',
+        'text': 'Программирование от хардвара до хардкода'
+    },
+    {
+        'id': 14, 'line': 6, 'name': 'История машинного кода', 'img': 'img:ПЕРФАЛЕНТА', 'type': 2,
+        'short': 'Исторический курс как человечество скатилось от машинного кода к первому языку',
+        'text': 'Машинный код - личинка ассемблера. Ладно, мне просто надо много курсов для теста.'
     },
 )

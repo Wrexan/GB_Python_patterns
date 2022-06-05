@@ -1,5 +1,5 @@
 from framework.views import View, app, debug
-from database import db_get_line, db_get_lines, db_get_course, db_get_courses_by_line, db_count_curses_in_line,\
+from database import db_get_line, db_get_lines, db_get_course, db_get_courses_by_line, \
     db_count_curses_in_line_new, db_precount_courses_for_lines
 
 FRONTEND_PATH = 'frontend/'
