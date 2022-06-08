@@ -1,4 +1,4 @@
-from setup import PAGE_404
+from settings import PAGE_404
 from framework.views import View
 
 
@@ -22,5 +22,11 @@ class Responses:
     def status_404(self):
         self.status = '404 NOT FOUND'
         self.body = View.view(PAGE_404) if PAGE_404 else '<p>404'
+        self.headers = [('Content-type', 'text/html')]
+        return self
+
+    def status_500(self):
+        self.status = '500 SERVER ERROR'
+        self.body = '<p>500 SERVER ERROR'
         self.headers = [('Content-type', 'text/html')]
         return self
