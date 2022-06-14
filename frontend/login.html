@@ -5,12 +5,13 @@
 <div class="text">
     <div class="mform">
         <p>
-            <form action="/login" method="post" enctype="text/plain">
-                <label for="username">Ник:</label><br>
-                <input type="text" id="username" name="username" value="Вася"><br>
-                <label for="password">Пароль:</label><br>
-                <input type="password" id="password" name="password" value="123"><br><br>
-                <input type="submit" value="Войти"><br>
+            <form action="/login" id="loginform" method="post" enctype="text/plain">
+                <label for="uname">Ник:</label><br>
+                <input type="text" id="uname" name="uname" value="Basil"><br>
+                <label for="pass">Пароль:</label><br>
+                <input type="password" id="pass" name="pass" value="123"><br><br>
+                <input type="hidden" id="auth" name="auth" value="">
+                <input type="submit" id="login" value="Войти"><br>
             </form>
         <p>
     </div>
@@ -32,3 +33,122 @@
     </div>
     {{?}}
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9/crypto-js.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9/hmac-sha256.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9/enc-base64.min.js"></script>
+<script>
+function ajax(url, method, functionName, dataArray) {
+    let xhttp = new XMLHttpRequest();
+    xhttp.open(method, url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send(dataArray);
+<!--    xhttp.send(requestData(dataArray));-->
+
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            functionName(this.response, this.getAllResponseHeaders());
+            console.log('this.readyState == 4 && this.status == 200');
+        }
+        console.log(this.response);
+    }
+}
+
+function requestData(dataArr) {
+    let out = '';
+    for (let key in dataArr) {
+        out += `${key}=${dataArr[key]}&`;
+    }
+    console.log(out);
+    return out;
+}
+
+ function login(result, headers) {
+    var hlist = headers.split("\r\n").map(x=>x.split(/: */,3));
+    for (let i=0; i<hlist.length; i++) {
+        if (hlist[i][0] == 'http_authorization'){
+            sessionStorage.setItem('token', hlist[i][1]+":"+hlist[i][2]);
+            console.log(hlist[i][1]+":"+hlist[i][2]);
+            break;
+        }
+    }
+    document.body.innerHTML = result;
+}
+
+$("body").on("click", "#login", function(e){
+    e.preventDefault();
+    var name = encodeURIComponent($('#uname').val());
+    var pass = $('#pass').val();
+    $('#pass').val("");
+    var hash = CryptoJS.HmacSHA256(name, pass);
+    var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+    ajax('http://127.0.0.1:8000/login', 'POST', login, 'act=login&uname='+name+'&pass='+hashInBase64);
+});
+</script>
+
+<!--    $("body").on("click", "#login", function(e){-->
+<!--        var name = encodeURIComponent($('#uname').val());-->
+<!--        var pass = $('#pass').val();-->
+<!--        $('#pass').val("");-->
+<!--        var hash = CryptoJS.HmacSHA256(name, pass);-->
+<!--        var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);-->
+
+<!--        $('#auth').val('Bearer '+name+":"+hashInBase64);-->
+<!--&lt;!&ndash;        alert(name + "\n" + pass + "\n" + hashInBase64 + "\n" + $('#auth').val());&ndash;&gt;-->
+<!--    });-->
+
+<!--        e.preventDefault();-->
+<!--        $.ajax({-->
+<!--            url: "http://127.0.0.1:8000/login",-->
+<!--            type: 'POST',-->
+<!--            contentType: 'application/json',-->
+<!--            headers: {-->
+<!--                "Authorization": "Bearer " + encodeURIComponent($('#username').val()) + ":" + $('#password').val()-->
+<!--                },-->
+<!--            data: jQuery.param({ "username": encodeURIComponent($('#username').val()),-->
+<!--                                 "password" : "555"-->
+<!--                                 }) ,-->
+<!--            async: false,-->
+<!--            success: function (textStatus, status) {-->
+<!--                console.log($('#username').val());-->
+<!--                console.log($('#password').val());-->
+<!--                console.log('OK');-->
+<!--            },-->
+<!--            error: function(xhr, textStatus, error) {-->
+<!--                console.log(xhr.responseText);-->
+<!--                console.log(xhr.statusText);-->
+<!--                console.log(textStatus);-->
+<!--                console.log(error);-->
+<!--            },-->
+<!--&lt;!&ndash;            success: function (result) {&ndash;&gt;-->
+<!--&lt;!&ndash;                console.log('OK');&ndash;&gt;-->
+<!--&lt;!&ndash;                window.location = '/';&ndash;&gt;-->
+<!--&lt;!&ndash;                window.location.reload();&ndash;&gt;-->
+<!--&lt;!&ndash;            }&ndash;&gt;-->
+<!--        });-->
+<!---->
+<!--    function loginSubmit(e){-->
+<!--        e.preventdefault();-->
+<!--        $.ajax({-->
+<!--            url: "http://127.0.0.1:8000/login",-->
+<!--            type: 'POST',-->
+<!--            contentType: 'application/json',-->
+<!--            headers: {-->
+<!--                "Authorization": "Bearer " + encodeURIComponent($('#username').val()) + ":" + $('#password').val()-->
+<!--                },-->
+<!--            data: jQuery.param({ "username": encodeURIComponent($('#username').val()),-->
+<!--                                 "password" : "555"-->
+<!--                                 }) ,-->
+<!--            async: true,-->
+<!--            done: function (textStatus, status) {-->
+<!--                console.log($('#username').val());-->
+<!--                console.log($('#password').val());-->
+<!--                console.log('OK');-->
+<!--            },-->
+<!--            fail: function(xhr, textStatus, error) {-->
+<!--                console.log(xhr.responseText);-->
+<!--                console.log(xhr.statusText);-->
+<!--                console.log(textStatus);-->
+<!--                console.log(error);-->
+<!--            }-->
+<!--        });-->
+<!--    }-->

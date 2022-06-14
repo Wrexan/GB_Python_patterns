@@ -1,127 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <style>
-            body {
-                padding-top: 3rem;
-                padding-bottom: 110px;
-                background-color: rgb(196, 210, 219);
-                margin: 0;
-            }
-            div.header, footer{
-                color: lightgray;
-                width: 100%;
-                background-color: rgb(46, 60, 69);
-                padding-top: 1rem;
-                padding-bottom: 1rem;
-            }
-            div.header {
-                position: fixed;
-                text-align: center;
-                top: 0;
-            }
-            footer {
-                text-align: center;
-                bottom: 0;
-                position: fixed;
-            }
-            h1 {
-                text-align: center;
-            }
-            h4 {
-                text-align: center;
-                margin: 100;
-            }
-            .a {
-                font-weight: bold;
-                color: lightgray;
-            }
-            .lforms {
-                background-color: rgb(46, 60, 69);
-<!--                padding: 10px;-->
-                height: 70px;
-                align: center;
-            }
-            div.text{
-                align: center;
-                width: 1024px;
-                height: 100%;
-                overflow: auto;
-                margin: auto;
-<!--                padding: .3rem;-->
-            }
-            i{
-                margin: auto;
-            }
-            .lform {
-                text-align: center;
-                float: left;
-                width: 33.3%;
-                height: 50%;
-                overflow: auto;
-                margin: auto;
-<!--                padding: .3rem;-->
-                color: lightgray;
-                background-color: rgb(46, 60, 69);
-            }
-            .cform {
-                text-align: center;
-                float: left;
-                width: 33.33%;
-                height: 300px;
-                overflow: auto;
-                margin: auto;
-            }
-            .mform {
-                text-align: center;
-                float: center;
-                width: 50%;
-                height: 70%;
-                overflow: auto;
-                margin: auto;
-                color: lightgray;
-                background-color: rgb(46, 60, 69);
-            }
-            a.lformbutt {
-                display: block;
-                text-decoration: none;
-<!--                float: left;-->
-                width: 98%;
-                height: 50%;
-<!--                overflow: auto;-->
-                margin: 1%;
-                border: 1px solid rgba(46, 60, 69, 0.4);
-                border-radius: 10px;
-                padding-top: 1%;
-                padding-bottom: 1%;
-                color: rgb(46, 60, 69);
-                background-color: rgb(216, 230, 239);
-                cursor: pointer;
-            }
-            a.cformbutt {
-                display: block;
-                text-decoration: none;
-<!--                float: left;-->
-                width: 99%;
-                height: 99%;
-<!--                overflow: auto;-->
-                margin: auto;
-                border: 1px solid rgba(46, 60, 69, 0.4);
-                border-radius: 10px;
-<!--                padding-top: 1rem;-->
-<!--                padding-bottom: 1rem;-->
-                color: rgb(46, 60, 69);
-                background-color: rgb(216, 230, 239);
-                cursor: pointer;
-            }
-            .butt:hover {
-              background-color: rgb(236, 250, 255);
-
-
-        </style>
         <meta charset="UTF-8">
-
         <title>Лучшие курсы на свете</title>
+        <style>
+            {{/css/style.css}}
+        </style>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script type='text/javascript'>
+        function url(addr){
+            console.log(addr);
+            var token = this.sessionStorage.getItem('token');
+            if (token){
+                header = {"Authorization": "Bearer " +  token}
+            }else{
+                header = {}
+            }
+            $.ajax({
+                async: false,
+                headers: header,
+                beforeSend : function(xhr) {
+                    console.log('sessionStorage.token=' + token);
+                    xhr.setRequestHeader("Authorization", "Bearer " +  token);
+                }
+            });
+        }
+        $('a[href="/about"]').click(function(e){e.preventDefault();});
+<!--        $('#a').click(function(event) {-->
+<!--            event.preventDefault();-->
+<!--});-->
+<!--&lt;!&ndash;            $("body").on("click", "#login", function(e)&ndash;&gt;-->
+<!--&lt;!&ndash;            $("body").on("click", "#a", function(e) {&ndash;&gt;-->
+<!--&lt;!&ndash;                var elem = $( this );&ndash;&gt;-->
+<!--&lt;!&ndash;                url = elem.attr( "href" ).val();&ndash;&gt;-->
+<!--&lt;!&ndash;                e.preventDefault();&ndash;&gt;-->
+<!--&lt;!&ndash;                console.log(this.val());&ndash;&gt;-->
+<!--&lt;!&ndash;                if ( elem.attr( "href" ).match( "/index" ) ) {&ndash;&gt;-->
+<!--&lt;!&ndash;                    e.preventDefault();&ndash;&gt;-->
+<!--&lt;!&ndash;                    elem.addClass( "evil" );&ndash;&gt;-->
+<!--&lt;!&ndash;                }&ndash;&gt;-->
+<!--&lt;!&ndash;            });&ndash;&gt;-->
+<!--            var token = this.sessionStorage.getItem('token');-->
+<!--            if (token){-->
+<!--&lt;!&ndash;                var Header = new Headers();&ndash;&gt;-->
+<!--&lt;!&ndash;                Header.append("Authorization", "Bearer " +  token)&ndash;&gt;-->
+<!--&lt;!&ndash;                this.setRequestHeader("Authorization", "Bearer " +  token);&ndash;&gt;-->
+<!--&lt;!&ndash;                $.ajax({&ndash;&gt;-->
+<!--&lt;!&ndash;                    async: false,&ndash;&gt;-->
+<!--&lt;!&ndash;                    headers: {"Authorization": "Bearer " +  token}&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                    beforeSend : function(xhr) {&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        console.log('sessionStorage.token=' + token);&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        xhr.setRequestHeader("Authorization", "Bearer " +  token);&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                    }&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                });&ndash;&gt;-->
+<!--            }-->
+        </script>
     </head>
     <body>
         <div class="header">

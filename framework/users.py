@@ -1,6 +1,12 @@
+from secrets import token_hex
+
+from database import DB
+
+
 class Users:
-    def __init__(self, database):
-        self.database = database
+    def __init__(self):
+        self.database = DB
+
     #     self.__username: str = ''
     #     self.__password: str = ''
     #     # self.__firstname: str = ''
@@ -65,7 +71,15 @@ class Users:
     #         print(f'Course id must be higher than 0: {__id}')
     #     return True
 
-    def get_user(self, username):
+    def check_user_token(self, username, token):
+        for user in self.database.users:
+            if user['username'] == username:
+                if user['token'] == token:
+                    return True
+                return False
+        return None
+
+    def get_user_max_id(self, username):
         max_id = 1
         for user in self.database.users:
             max_id = max(max_id, user['id'])
@@ -73,23 +87,50 @@ class Users:
                 return user, max_id
         return None, max_id
 
-    def create_user(self, request, username: str, password: str, tel: str):
-        print(f'{request.body=}')
-        _user, _max_id = self.get_user(request.body[username])
+    def create_user(self, request):
+        # print(f'{request.body=} {username=}')
+        if request.reg is None or \
+                'username' not in request.reg or request.reg['username'] == '' \
+                                                                            'password' not in request.reg or \
+                request.reg['password'] == '' \
+                                           'tel' not in request.reg or request.reg['tel'] == '':
+            print(f'ERROR on register: В запросе отсутствует(ют) поля : {request.reg=}')
+            return False, f'Заполните обязательные поля'
+        _user, _max_id = self.get_user_max_id(request.reg['username'])
         if not _user:
+            _email = request.reg['email'] if 'email' in request.reg else ''
             self.database.users.append({'id': _max_id + 1,
-                                        'username': request.body[username],
-                                        'password': request.body[password],
-                                        'tel': request.body[tel],
+                                        'username': request.reg['username'],
+                                        'password': request.reg['password'],
+                                        'tel': request.reg['tel'],
+                                        'email': _email,
                                         'courses': []})
-            return True, 'Добро пожаловать на наш проект. Приятной учебы.'
+            return True, f'Добро пожаловать на наш проект, {request.reg["username"]}. Приятной учебы.'
         return False, 'Данное имя уже занято.'
 
-    def login_user(self, request, username: str, password: str):
-        # print(f'{request.body=}')
-        _user, _ = self.get_user(request.body[username])
-        if _user:
-            if _user['password'] == password:
-                _user[''] = 1
-            return True, f'Здравствуйте, {_user[username]}.'
-        return False, 'Войти не удалось. Возможно такого аккаунта не существует.'
+    def login_user(self, request, reg_login: bool = False):
+        # print(f'{request.auth=} {type(request.auth)=}')
+        auth = request.reg if reg_login else request.auth
+        if 'username' in auth and 'password' in auth:
+            _user, _ = self.get_user_max_id(auth['username'])
+            if _user:
+                if _user['password'] == auth['password']:
+                    if _user['token'] == '':
+                        _user['token'] = str(token_hex(16))
+                    request.send_headers['HTTP_AUTHORIZATION'] = f'{_user["username"]}:{_user["token"]}'
+                    # request.send_headers['HTTP_AUTHORIZATION'] = f'Bearer {_user["username"]}:{_user["token"]}'
+                    return True, f'Здравствуйте, {_user["username"]}<br>Добро пожаловать на наши курсы'
+                return False, 'Неправильный пароль.'
+        return False, 'Аккаунта с таким именем не существует'
+
+    def logout_user(self, request, reg_login: bool = False):
+        if request.verified:
+            try:
+                for _user in DB.users:
+                    if _user['username'] == [request.verified[1]]:
+                        _user['token'] = ''
+                request.verified = None, None
+            except Exception as e:
+                print(f'Не удалось разлогинить аккаунт {request.verified[1]} по причине: {e}')
+
+U = Users()

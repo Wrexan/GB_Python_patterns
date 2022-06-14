@@ -1,13 +1,13 @@
 <nav>
-    <a class="a" href=%index%>Главная</a>&ensp;
+    <a class="a" title="FFF" href="javascript:;" onclick="url(/index/);">Главная</a>&ensp;
     <a class="a" href=%about%>О сайте</a>&ensp;
     <a class="a" href=%courses%>Курсы</a>&ensp;
     <a class="a" href=%contacts%>Контакты</a>&ensp;
     {{is_admin?}}
         <a class="a" href=%admin%>Админка</a>&ensp;
     {{?}}
-    {{is_logged?}}
-        <a class="a" href=%profile%>%username%</a>&ensp;
+    {{verified?}}
+        <a class="a" href=%profile%>{{username}}</a>&ensp;
         <a class="a" href=%logout%>Выйти</a>&ensp;
     {{else}}
         <a class="a" href=%login%>Войти</a>&ensp;

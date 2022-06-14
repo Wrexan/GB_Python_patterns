@@ -109,8 +109,8 @@ class Database:
         ]
 
         self.users = [
-            {'id': 1, 'username': 'Вася', 'password': '123', 'tel': '555-55-55', 'courses': []},
-            {'id': 2, 'username': 'Петя', 'password': '123', 'tel': '555-55-55', 'courses': []},
+            {'id': 1, 'username': 'Basil', 'password': 'juAevLtnbBX1ZSzf7VbqHsxwAgRmtNdvLWzpsfEEuzE=', 'token': '', 'tel': '555-55-55', 'courses': []},
+            {'id': 2, 'username': 'Peter', 'password': 'S//u5C6dqSdsWPyTTkXKwzm2CTaExAAnn4UtIcBs3Ho=', 'token': '', 'tel': '555-55-55', 'courses': []},
         ]
         
     def db_get_line(self, _id):
@@ -196,4 +196,4 @@ class Database:
     #         return users[id]
     #     return None
     
-
+DB = Database()

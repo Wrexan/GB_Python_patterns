@@ -19,7 +19,7 @@ PAGE_404 = ''
 # How many page layers need injections. Default = 1. Deeper is slower.
 # 0: page in index
 # 1: page in page in index
-DEEPNESS = 1
+DEEPNESS = 2
 
 FRONTEND_PATH = 'frontend/'
 

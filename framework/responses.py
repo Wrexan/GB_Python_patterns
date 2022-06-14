@@ -17,6 +17,9 @@ class Responses:
         self.status = '200 OK'
         self.body = custom_view(request)
         self.headers = [('Content-type', 'text/html')]
+        if request.send_headers:
+            for header in request.send_headers.items():
+                self.headers.append(header)
         return self
 
     def status_404(self):

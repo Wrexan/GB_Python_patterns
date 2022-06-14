@@ -7,10 +7,14 @@
         <div class="mform">Юзеры</div>
     </div>
 </div>
-<div class="lforms">
+<!--<div class="lforms">-->
     <div class="text">
         {{u*21}}
-            <div class="lform">{{user_list:username}}</div>
+            <div class="uform">
+                <b>Имя: {{user_list:username}}</b><br>
+                <b>Пароль:</b> {{user_list:password}}<br>
+                <b>Токен:</b> {{user_list:token}}
+            </div>
         {{*}}
     </div>
-</div>
+<!--</div>-->

@@ -3,7 +3,6 @@ import sys
 from time import time
 from functools import wraps
 from settings import DEEPNESS, FRONTEND_PATH
-# from responses import Responses
 
 
 class View:
@@ -30,10 +29,15 @@ class View:
         self.error = 0
         self.max_errors = 3
 
-    def view(self, page_file: str = 'index.html', injections=None, query_params=None):
+    def view(self, request=None, page_file: str = 'index.html', injections=None, query_params=None):
         self.error = 0
         # self.iterable_starter = 0
         self._apply_to_self(injections, query_params)
+        if request.verified[0]:
+            print(f'VERIFIED: {request.verified=}')
+            self.injections['verified'] = 'AAA'
+            # self.injections['username'] = request.verified[1]
+        print(f'{self.injections=}')
         try:
             with open(self.path(page_file), 'r') as file:
                 data = file.read().replace('\n', '').replace('    ', ' ')
@@ -51,6 +55,7 @@ class View:
             print(f'{fname}[{exc_tb.tb_lineno}]ERROR: while parsing view: ({page_file=}) {e}')
             self.error += 1
             return '500'
+        # print(f'====DATA: {data}')
         return data
 
     # Рекурсивно-костыльный шаблонизатор. С JINJA не разбирался, интересно было написать свой
@@ -115,8 +120,9 @@ class View:
                             else:
                                 inj_data = inj_arg
                         elif isinstance(inj_arg, list):
+                            # print(f'NUM: {type(num)=} {num=}')
                             if num < len(inj_arg):
-                                print(f'{num=} {key=} {len(inj_arg)=} {inj_arg[num]["id"]=}')
+                                # print(f'{num=} {key=} {len(inj_arg)=} {inj_arg[num]["id"]=}')
                                 inj_data = inj_arg[num][key]
                                 if num == len(inj_arg):
                                     stopper = 1
@@ -134,7 +140,7 @@ class View:
                             else:
                                 inj_data = 'Not found'
 
-                            print(f'{inj_arg=} {key=} {num=}')
+                                # print(f'{inj_arg=} {key=} {num=}')
                         elif isinstance(inj_arg, tuple):
                             print('tuple')
                             inj_data = 'Not found'
@@ -142,7 +148,7 @@ class View:
                             print(f'ATTENTION: unknown type var: ({inj_var=} {type(inj_arg)=})'
                                   f' in ({file if isinstance(file, str) else "injection"})')
                             inj_data = ''
-                    elif inj_var[-5:] == '.html':  # If not variable, then filename
+                    elif inj_var[-5:] == '.html' or inj_var[-4:] == '.css':# or inj_var[-3:] == '.js':  # If not variable, then filename
                         inj_data = self._open_file(self.path(inj_var))
                     else:
                         print(f'ATTENTION: unused var: ({inj_var=})'
@@ -150,8 +156,9 @@ class View:
                         # print(f'{data=}')
                         # inj_var = ''
                         inj_data = ''
-                        data = ''
-                    if layer < DEEPNESS:
+                        data = data[:inj_start] + data[inj_end + 2:]
+                        # data = ''
+                    if layer <= DEEPNESS:
                         inj_data, _ = self._just_inject_in_that_file(inj_data, file, num)
                     data = data[:inj_start] + inj_data + data[inj_end + 2:]
                     # print(f'{data =}')
@@ -168,6 +175,7 @@ class View:
             if self.error >= 1:
                 sys.exit(1)
             return '500'
+        # print(f'====DATA: {data}')
         return data, stopper
 
     def _remove_comments(self, html_data: str, file: str):
@@ -307,7 +315,7 @@ class View:
             # print(f'{obj=} {num=}')
             inj_arg = self._get_value_from_injections(obj)
             return inj_arg, num
-        return None, None
+        return None, 0
 
     def _apply_to_self(self, injections, query_params):
         if injections is None:
