@@ -32,7 +32,7 @@ class WSGI:
         self.request = Request(self.environ)
         self.responser = Responses()
         self.response = None
-        print(f'GOT REQUEST: {self.request=}')
+        # print(f'GOT REQUEST: {self.request=}')
         # print(f'{self.responser=}')
 
         # Call front_controllers if registered

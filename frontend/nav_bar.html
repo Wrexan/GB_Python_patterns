@@ -1,15 +1,15 @@
 <nav>
-    <a class="a" title="FFF" href="javascript:;" onclick="url(/index/);">Главная</a>&ensp;
-    <a class="a" href=%about%>О сайте</a>&ensp;
-    <a class="a" href=%courses%>Курсы</a>&ensp;
-    <a class="a" href=%contacts%>Контакты</a>&ensp;
+    <a class="a" href="javascript:;" onclick="url('%index%');">Главная</a>&ensp;
+    <a class="a" href="javascript:;" onclick="url('%about%');">О сайте</a>&ensp;
+    <a class="a" href="javascript:;" onclick="url('%courses%');">Курсы</a>&ensp;
+    <a class="a" href="javascript:;" onclick="url('%contacts%');">Контакты</a>&ensp;
     {{is_admin?}}
-        <a class="a" href=%admin%>Админка</a>&ensp;
+        <a class="a" href="javascript:;" onclick="url('%admin%');">Админка</a>&ensp;
     {{?}}
     {{verified?}}
-        <a class="a" href=%profile%>{{username}}</a>&ensp;
-        <a class="a" href=%logout%>Выйти</a>&ensp;
+        <a class="a" href="javascript:;" onclick="url('%profile%');">{{username}}</a>&ensp;
+        <a class="a" href="javascript:;" onclick="url('%logout%');">Выйти</a>&ensp;
     {{else}}
-        <a class="a" href=%login%>Войти</a>&ensp;
+        <a class="a" href="javascript:;" onclick="url('%login%');">Войти</a>&ensp;
     {{?}}
 </nav>

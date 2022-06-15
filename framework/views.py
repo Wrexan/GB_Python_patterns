@@ -33,11 +33,10 @@ class View:
         self.error = 0
         # self.iterable_starter = 0
         self._apply_to_self(injections, query_params)
-        if request.verified[0]:
-            print(f'VERIFIED: {request.verified=}')
-            self.injections['verified'] = 'AAA'
-            # self.injections['username'] = request.verified[1]
-        print(f'{self.injections=}')
+        if request.verified:
+            # print(f'VERIFIED: {request.verified=}')
+            self.injections['verified'] = True
+            self.injections['username'] = request.username
         try:
             with open(self.path(page_file), 'r') as file:
                 data = file.read().replace('\n', '').replace('    ', ' ')
@@ -64,7 +63,12 @@ class View:
             stopper = 0
             layer = 0
             inj_end = 0
-            data = str(html_data) if isinstance(html_data, int) else html_data
+            if isinstance(html_data, int):
+                data = str(html_data)
+            elif isinstance(html_data, list):
+                data = str(html_data)
+            else:
+                data = html_data
             data = self._remove_comments(data, file)
             # data = self._remove_comments(data, file) if isinstance(html_data, str) else html_data
             while layer <= DEEPNESS:
@@ -316,6 +320,19 @@ class View:
             inj_arg = self._get_value_from_injections(obj)
             return inj_arg, num
         return None, 0
+
+    # def _parse_list(self, data):
+    #     for i, e in enumerate(data):
+    #         # print(f'cycle start: {i}  id:{cycle_dig + i}')
+    #         cd, stopper = self._just_inject_in_that_file(cycle_data, file, cycle_dig + i)
+    #         if stopper:
+    #             break
+    #         cycles_data += cd
+    #         # print(f'cycle end: {i} {cycle_data=}')
+    #     inj_end = cycle_end + 5
+    #     data = f'{data[:inj_start]}{cycles_data}{data[inj_end:]}'
+    #     # print(f'CYCLES ENDED: {data=}')
+    #     return True, data, inj_end
 
     def _apply_to_self(self, injections, query_params):
         if injections is None:

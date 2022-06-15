@@ -7,53 +7,82 @@
             {{/css/style.css}}
         </style>
         <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script type='text/javascript'>
-        function url(addr){
-            console.log(addr);
-            var token = this.sessionStorage.getItem('token');
-            if (token){
-                header = {"Authorization": "Bearer " +  token}
-            }else{
-                header = {}
-            }
-            $.ajax({
-                async: false,
-                headers: header,
-                beforeSend : function(xhr) {
-                    console.log('sessionStorage.token=' + token);
-                    xhr.setRequestHeader("Authorization", "Bearer " +  token);
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9/crypto-js.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9/hmac-sha256.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9/enc-base64.min.js"></script>
+        <script>
+            function getdata(result, headers) {
+                var hlist = headers.split("\r\n").map(x=>x.split(/: */,3));
+                for (let i=0; i<hlist.length; i++) {
+                    if (hlist[i][0] == 'http_authorization'){
+                        sessionStorage.setItem('token', hlist[i][1]+":"+hlist[i][2]);
+            <!--            console.log(hlist[i][1]+":"+hlist[i][2]);-->
+                        break;
+                    }
                 }
-            });
-        }
-        $('a[href="/about"]').click(function(e){e.preventDefault();});
-<!--        $('#a').click(function(event) {-->
-<!--            event.preventDefault();-->
-<!--});-->
-<!--&lt;!&ndash;            $("body").on("click", "#login", function(e)&ndash;&gt;-->
-<!--&lt;!&ndash;            $("body").on("click", "#a", function(e) {&ndash;&gt;-->
-<!--&lt;!&ndash;                var elem = $( this );&ndash;&gt;-->
-<!--&lt;!&ndash;                url = elem.attr( "href" ).val();&ndash;&gt;-->
-<!--&lt;!&ndash;                e.preventDefault();&ndash;&gt;-->
-<!--&lt;!&ndash;                console.log(this.val());&ndash;&gt;-->
-<!--&lt;!&ndash;                if ( elem.attr( "href" ).match( "/index" ) ) {&ndash;&gt;-->
-<!--&lt;!&ndash;                    e.preventDefault();&ndash;&gt;-->
-<!--&lt;!&ndash;                    elem.addClass( "evil" );&ndash;&gt;-->
-<!--&lt;!&ndash;                }&ndash;&gt;-->
-<!--&lt;!&ndash;            });&ndash;&gt;-->
-<!--            var token = this.sessionStorage.getItem('token');-->
-<!--            if (token){-->
-<!--&lt;!&ndash;                var Header = new Headers();&ndash;&gt;-->
-<!--&lt;!&ndash;                Header.append("Authorization", "Bearer " +  token)&ndash;&gt;-->
-<!--&lt;!&ndash;                this.setRequestHeader("Authorization", "Bearer " +  token);&ndash;&gt;-->
-<!--&lt;!&ndash;                $.ajax({&ndash;&gt;-->
-<!--&lt;!&ndash;                    async: false,&ndash;&gt;-->
-<!--&lt;!&ndash;                    headers: {"Authorization": "Bearer " +  token}&ndash;&gt;-->
-<!--&lt;!&ndash;&lt;!&ndash;                    beforeSend : function(xhr) {&ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;&lt;!&ndash;                        console.log('sessionStorage.token=' + token);&ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;&lt;!&ndash;                        xhr.setRequestHeader("Authorization", "Bearer " +  token);&ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;&lt;!&ndash;                    }&ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;                });&ndash;&gt;-->
-<!--            }-->
+                document.body.innerHTML = result;
+            }
+
+<!--            $("body").on("click", "#reg", function(e){-->
+<!--                e.preventDefault();-->
+<!--                var name = encodeURIComponent($('#uname').val());-->
+<!--                var pass = $('#pass').val();-->
+<!--                var tel = $('#tel').val();-->
+<!--                $('#pass').val("");-->
+<!--                var hash = CryptoJS.HmacSHA256(name, pass);-->
+<!--                var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);-->
+<!--                ajax('http://127.0.0.1:8000/register', 'POST', reg, 'act=reg&uname='+name+'&pass='+hashInBase64+'&tel='+tel, {});-->
+<!--            });-->
+
+            function auth(type){
+                console.log(type);
+                var name = encodeURIComponent($('#uname').val());
+                var pass = $('#pass').val();
+                var hash = CryptoJS.HmacSHA256(name, pass);
+                var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+                if (type == 'login'){
+                    ajax('http://127.0.0.1:8000/login', 'POST', getdata, 'act=login&uname='+name+'&pass='+hashInBase64, {});
+                }
+                if (type == 'reg'){
+                    var tel = $('#tel').val();
+                    ajax('http://127.0.0.1:8000/register', 'POST', getdata, 'act=reg&uname='+name+'&pass='+hashInBase64+'&tel='+tel, {});
+                }
+            }
+        </script>
+        <script type='text/javascript'>
+            function ajax(url, method, functionName, dataArray, headers) {
+                let xhttp = new XMLHttpRequest();
+                xhttp.open(method, url, true);
+                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                setHeaders(xhttp, headers);
+                xhttp.send(dataArray);
+            <!--    xhttp.send(requestData(dataArray));-->
+
+                xhttp.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        functionName(this.response, this.getAllResponseHeaders());
+                    }
+    <!--                console.log(this.response);-->
+                }
+            }
+            function setHeaders(xhttp, headers){
+    <!--            console.log('headers: '+headers);-->
+                for(let key in headers){
+                    xhttp.setRequestHeader(key, headers[key]);
+                }
+            }
+            function load_html(result, headers) {
+                document.body.innerHTML = result;
+            }
+            function url(addr){
+                var token = this.sessionStorage.getItem('token');
+                if (token){
+                    header = {"Authorization": "Bearer " +  token}
+                }else{
+                    header = {}
+                }
+                ajax(addr, 'GET', load_html, '', header);
+            }
         </script>
     </head>
     <body>

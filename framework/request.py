@@ -4,6 +4,7 @@ from framework.users import U
 
 class Request:
     def __init__(self, environ: dict):
+        print('-' * 80)
         self.users = U
         self.act = ''
         self.auth = {}
@@ -11,12 +12,17 @@ class Request:
         self.headers = self._get_http_headers(environ)
         self.method = environ.get('REQUEST_METHOD')
         self.body = self._parse_post_query_params()
+        print(f'BODY: {self.body}')
         self.query_params = self._get_get_query_params(environ)
-        self.path = environ.get('PATH_INFO')
+        self.path = self._get_clean_path()
+        print(f'REQ_PATH: {self.path}')
         self.client_ip4 = environ.get('REMOTE_ADDR')
-        self.verified = self._check_token()  # True, username
-        self.send_headers = {}  # If name/pass verified on login? then Bearer
+        self.verified, self.username, self.user = self._check_token()  # True, username, user
+        print(f'VERIFIED: {self.verified}')
+        self.headers_to_send = {}  # If name/pass verified on login? then Bearer
         self.origin = environ.get('HTTP_ORIGIN')
+
+
 
     def _get_http_headers(self, environ: dict):
         headers = {}
@@ -38,14 +44,14 @@ class Request:
         return headers
 
     def _check_token(self):
-        if self.act in ('login', 'register'):
-            return True, self.auth['username']
+        if self.act in ('login', 'reg'):
+            return True, self.auth['username'], self.users.get_user(self.auth['username'])
         auth = self.env.get('HTTP_AUTHORIZATION')
-        print(f'{auth=}')
+        # print(f'{self.act=} {auth=}')
         if auth and auth.startswith('Bearer ') and ':' in auth[7:]:
             auth = (auth[7:].split(':'))
-            return self.users.check_user_token(auth[0], auth[1]), auth[0]
-        return None, None
+            return self.users.check_user_token(auth[0], auth[1]), auth[0], self.users.get_user(auth[0])
+        return None, None, None
 
     # def _get_login(self, parsed_body):
     #     try:
@@ -80,7 +86,6 @@ class Request:
             parsed_body = self._parse_query(body, '\r\n')
         elif '&' in body:
             parsed_body = self._parse_query(body, '&')
-        # print(f'GOT BODY: {parsed_body=}')
         self._set_auth_from_parsed_body(parsed_body)
 
         return parsed_body
@@ -94,13 +99,13 @@ class Request:
                     self.auth['password'] = parsed_body['pass']
 
                     # self._get_login(parsed_body)
-            elif parsed_body['act'] == 'logout':
-                if 'uname' in parsed_body and \
-                        'pass' in parsed_body and \
-                        'tel' in parsed_body:
-                    self.act = 'logout'
-                    self.auth['username'] = parsed_body['uname']
-                    self.auth['password'] = parsed_body['pass']
+            # elif parsed_body['act'] == 'logout':
+            #     if 'uname' in parsed_body and \
+            #             'pass' in parsed_body and \
+            #             'tel' in parsed_body:
+            #         self.act = 'logout'
+            #         self.auth['username'] = parsed_body['uname']
+            #         self.auth['password'] = parsed_body['pass']
                 # self.auth = self._get_login(parsed_body)
             elif parsed_body['act'] == 'reg':
                 if 'uname' in parsed_body and \

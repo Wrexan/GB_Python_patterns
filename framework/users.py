@@ -54,26 +54,30 @@ class Users:
     # def courses(self):
     #     return self.__courses
     #
-    # # @add_course.setter
-    # def add_course(self, __id):
-    #     if self.check_course(__id):
-    #         self.__courses[__id] = __id
-    #
-    # def del_course(self, __id):
-    #     if self.check_course(__id):
-    #         del self.__courses[__id]
-    #
-    # @staticmethod
-    # def check_course(__id):
-    #     if not isinstance(__id, int):
-    #         print(f'Course id must be an integer: {__id}')
-    #     if __id <= 0:
-    #         print(f'Course id must be higher than 0: {__id}')
-    #     return True
+    # @add_course.setter
+    def add_course(self, request, _id):
+        if self.check_course(_id):
+            if _id in request.user['courses']:
+                return
+            request.user['courses'].append(_id)
+
+    def del_course(self, request, _id):
+        if self.check_course(_id):
+            if _id in request.user['courses']:
+                request.user['courses'].remove(_id)
+
+    @staticmethod
+    def check_course(__id):
+        if not isinstance(__id, int):
+            print(f'Course id must be an integer: {__id}')
+        if __id <= 0:
+            print(f'Course id must be higher than 0: {__id}')
+        return True
 
     def check_user_token(self, username, token):
         for user in self.database.users:
             if user['username'] == username:
+                # print(f'check_user_token: {user["username"]=} {user["token"]=}')
                 if user['token'] == token:
                     return True
                 return False
@@ -87,50 +91,66 @@ class Users:
                 return user, max_id
         return None, max_id
 
+    def get_user(self, username):
+        for user in self.database.users:
+            if user['username'] == username:
+                return user
+        return None
+
     def create_user(self, request):
         # print(f'{request.body=} {username=}')
-        if request.reg is None or \
-                'username' not in request.reg or request.reg['username'] == '' \
-                                                                            'password' not in request.reg or \
-                request.reg['password'] == '' \
-                                           'tel' not in request.reg or request.reg['tel'] == '':
-            print(f'ERROR on register: В запросе отсутствует(ют) поля : {request.reg=}')
+        # if 'username' in request.auth and 'password' in request.auth:
+        if request.auth is None or \
+                'username' not in request.auth or \
+                request.auth['username'] == '' \
+                'password' not in request.auth or \
+                request.auth['password'] == '' \
+                'tel' not in request.auth or \
+                request.auth['tel'] == '':
+            print(f'ERROR on register: В запросе отсутствует(ют) поля : {request.auth=}')
             return False, f'Заполните обязательные поля'
-        _user, _max_id = self.get_user_max_id(request.reg['username'])
+        _user, _max_id = self.get_user_max_id(request.auth['username'])
         if not _user:
-            _email = request.reg['email'] if 'email' in request.reg else ''
+            _email = request.auth['email'] if 'email' in request.auth else ''
+            token = str(token_hex(16))
             self.database.users.append({'id': _max_id + 1,
-                                        'username': request.reg['username'],
-                                        'password': request.reg['password'],
-                                        'tel': request.reg['tel'],
+                                        'username': request.auth['username'],
+                                        'password': request.auth['password'],
+                                        'token': token,
+                                        'tel': request.auth['tel'],
                                         'email': _email,
                                         'courses': []})
-            return True, f'Добро пожаловать на наш проект, {request.reg["username"]}. Приятной учебы.'
+            request.headers_to_send['HTTP_AUTHORIZATION'] = f'{request.auth["username"]}:{token}'
+            return True, f'Добро пожаловать на наш проект, {request.auth["username"]}. Приятной учебы.'
         return False, 'Данное имя уже занято.'
 
     def login_user(self, request, reg_login: bool = False):
         # print(f'{request.auth=} {type(request.auth)=}')
-        auth = request.reg if reg_login else request.auth
+        # auth = request.reg if reg_login else request.auth
+        auth = request.auth
         if 'username' in auth and 'password' in auth:
-            _user, _ = self.get_user_max_id(auth['username'])
+            _user = self.get_user(auth['username'])
+            print(f'{_user=}')
             if _user:
                 if _user['password'] == auth['password']:
                     if _user['token'] == '':
                         _user['token'] = str(token_hex(16))
-                    request.send_headers['HTTP_AUTHORIZATION'] = f'{_user["username"]}:{_user["token"]}'
+                    request.headers_to_send['HTTP_AUTHORIZATION'] = f'{_user["username"]}:{_user["token"]}'
                     # request.send_headers['HTTP_AUTHORIZATION'] = f'Bearer {_user["username"]}:{_user["token"]}'
                     return True, f'Здравствуйте, {_user["username"]}<br>Добро пожаловать на наши курсы'
                 return False, 'Неправильный пароль.'
         return False, 'Аккаунта с таким именем не существует'
 
-    def logout_user(self, request, reg_login: bool = False):
+    def logout_user(self, request):
         if request.verified:
             try:
-                for _user in DB.users:
-                    if _user['username'] == [request.verified[1]]:
-                        _user['token'] = ''
-                request.verified = None, None
+                # for _user in DB.users:
+                #     if _user['username'] == request.username:
+                #         _user['token'] = ''
+                request.user['token'] = ''
+                request.verified = None
             except Exception as e:
-                print(f'Не удалось разлогинить аккаунт {request.verified[1]} по причине: {e}')
+                print(f'Не удалось разлогинить аккаунт {request.username} по причине: {e}')
+
 
 U = Users()

@@ -67,7 +67,8 @@ i{
     height: auto;
     overflow: auto;
     margin: auto;
-<!--                padding: .3rem;-->
+    padding-top: 1%;
+    padding-bottom: 1%;
     color: lightgray;
     background-color: rgb(46, 60, 69);
 }
@@ -92,11 +93,11 @@ i{
 a.lformbutt {
     display: block;
     text-decoration: none;
-<!--                float: left;-->
+    text-align: center;
     width: 97%;
     height: 48%;
 <!--                overflow: auto;-->
-    margin: 1%;
+    margin: 1ren;
     border: 1px solid rgba(46, 60, 69, 0.4);
     border-radius: 10px;
     padding-top: 1%;
@@ -108,7 +109,7 @@ a.lformbutt {
 a.cformbutt {
     display: block;
     text-decoration: none;
-<!--                float: left;-->
+    text-align: center;
     width: 99%;
     height: 99%;
 <!--                overflow: auto;-->

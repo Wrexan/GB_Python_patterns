@@ -17,8 +17,8 @@ class Responses:
         self.status = '200 OK'
         self.body = custom_view(request)
         self.headers = [('Content-type', 'text/html')]
-        if request.send_headers:
-            for header in request.send_headers.items():
+        if request.headers_to_send:
+            for header in request.headers_to_send.items():
                 self.headers.append(header)
         return self
 
