@@ -1,3 +1,6 @@
+from framework import db_mapper
+
+
 class Database:
     def __init__(self):
         self.course_types = (
