@@ -1,6 +1,0 @@
-CREATE TABLE person
-(
-idperson INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
-lastname VARCHAR (32),
-firstname VARCHAR (32)
-);

@@ -1,13 +1,20 @@
 from framework import db_mapper as db
-from settings import DATABASE_PATH_FILE
 
 users_fields = {
     'id': 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE',
     'username': 'VARCHAR (32) NOT NULL UNIQUE',
     'password': 'VARCHAR (44) NOT NULL',
     'token': 'VARCHAR (32)',
-    'tel': 'VARCHAR (16)'
+    'tel': 'VARCHAR (16)',
+    'email': 'VARCHAR (32)'
 }
+
+users_data = [
+    {'username': 'Basil', 'password': 'juAevLtnbBX1ZSzf7VbqHsxwAgRmtNdvLWzpsfEEuzE=', 'token': '',
+     'tel': '555-55-55'},
+    {'username': 'Peter', 'password': 'S//u5C6dqSdsWPyTTkXKwzm2CTaExAAnn4UtIcBs3Ho=', 'token': '',
+     'tel': '555-55-55'},
+]
 
 courses_fields = {
     'id': 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE',
@@ -18,13 +25,6 @@ courses_fields = {
     'short': 'VARCHAR (64)',
     'text': 'TEXT'
 }
-
-users_data = [
-    {'username': 'Basil', 'password': 'juAevLtnbBX1ZSzf7VbqHsxwAgRmtNdvLWzpsfEEuzE=', 'token': '',
-     'tel': '555-55-55'},
-    {'username': 'Peter', 'password': 'S//u5C6dqSdsWPyTTkXKwzm2CTaExAAnn4UtIcBs3Ho=', 'token': '',
-     'tel': '555-55-55'},
-]
 
 courses_data = [
     {
@@ -101,6 +101,17 @@ courses_data = [
     },
 ]
 
+courses_users_fields = {
+    'id': 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE',
+    'course_id': 'INTEGER NOT NULL UNIQUE',
+    'user_id': 'INTEGER NOT NULL UNIQUE',
+}
+
+courses_users_data = [
+    # {'id': 1, 'name': 'онлайн'},
+    # {'id': 2, 'name': 'офлайн'},
+]
+
 course_types_fields = {
     'id': 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE',
     'name': 'VARCHAR (64)'
@@ -124,9 +135,17 @@ course_lines_data = [
     {'id': 3, 'parent': 0, 'courses_in': 0, 'name': 'Учимся жить'},
 
     {'id': 4, 'parent': 1, 'courses_in': 0, 'name': 'Базовые знания'},
-    {'id': 13, 'parent': 1, 'courses_in': 0, 'name': 'Логика'},
     {'id': 5, 'parent': 1, 'courses_in': 0, 'name': 'Языки высокого уровня'},
     {'id': 6, 'parent': 1, 'courses_in': 0, 'name': 'Языки низкого уровня'},
+
+    {'id': 7, 'parent': 2, 'courses_in': 0, 'name': 'Базовые элементы и понятия'},
+    {'id': 8, 'parent': 2, 'courses_in': 0, 'name': 'Схемотехника'},
+    {'id': 9, 'parent': 2, 'courses_in': 0, 'name': 'Ремонт электроники'},
+
+    {'id': 10, 'parent': 3, 'courses_in': 0, 'name': 'Добрые дела'},
+    {'id': 11, 'parent': 3, 'courses_in': 0, 'name': 'Выгодные дела'},
+    {'id': 12, 'parent': 3, 'courses_in': 0, 'name': 'Безделье'},
+    {'id': 13, 'parent': 1, 'courses_in': 0, 'name': 'Логика'},
 
     {'id': 14, 'parent': 5, 'courses_in': 0, 'name': 'Python'},
     {'id': 15, 'parent': 5, 'courses_in': 0, 'name': 'Java'},
@@ -136,20 +155,12 @@ course_lines_data = [
     {'id': 18, 'parent': 6, 'courses_in': 0, 'name': 'Assembler'},
     {'id': 19, 'parent': 6, 'courses_in': 0, 'name': 'C'},
     {'id': 20, 'parent': 6, 'courses_in': 0, 'name': 'C++'},
-
-    {'id': 7, 'parent': 2, 'courses_in': 0, 'name': 'Базовые элементы и понятия'},
-    {'id': 8, 'parent': 2, 'courses_in': 0, 'name': 'Схемотехника'},
-    {'id': 9, 'parent': 2, 'courses_in': 0, 'name': 'Ремонт электроники'},
-
-    {'id': 10, 'parent': 3, 'courses_in': 0, 'name': 'Добрые дела'},
-    {'id': 11, 'parent': 3, 'courses_in': 0, 'name': 'Выгодные дела'},
-    {'id': 12, 'parent': 3, 'courses_in': 0, 'name': 'Безделье'},
 ]
 
 
 def insert_data_to_rows(table, data):
     for elem in data:
-        db.Row(table, elem)
+        table.add(elem)
 
 
 db.UnitOfWork.new_current()

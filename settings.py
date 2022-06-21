@@ -22,4 +22,4 @@ DEEPNESS = 2
 
 FRONTEND_PATH = 'frontend/'
 
-DATABASE_PATH_FILE = 'database.db'
+DATABASE_FILE = 'database.db'

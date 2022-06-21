@@ -2,9 +2,9 @@ import os
 import sys
 import sqlite3
 import threading
-from settings import DATABASE_PATH_FILE
+from settings import DATABASE_FILE
 
-connection = sqlite3.connect(DATABASE_PATH_FILE)
+connection = sqlite3.connect(DATABASE_FILE)
 
 
 class UnitOfWork:
@@ -16,6 +16,7 @@ class UnitOfWork:
         self.removed_objects = []
 
     def register_new(self, obj):
+        # print(f'REGISTER NEW: {obj.__dict__}')
         self.new_objects.append(obj)
 
     def register_dirty(self, obj):
@@ -25,9 +26,15 @@ class UnitOfWork:
         self.removed_objects.append(obj)
 
     def commit(self):
+        # print(f'{self.new_objects=}')
+        # print(f'{self.dirty_objects=}')
+        # print(f'{self.removed_objects=}')
         self.insert_new()
         self.update_dirty()
         self.delete_removed()
+        self.new_objects = []
+        self.dirty_objects = []
+        self.removed_objects = []
         try:
             connection.commit()
             # del self
@@ -81,17 +88,10 @@ class DomainObject:
 
 class Row(DomainObject):
     def __init__(self, table, row: dict):
-        self.id = 0
+        self.id = 999
         for key in row.keys():
             self.__setattr__(key, row[key])
         self.table = table
-        self.to_create()
-
-        # self.username = username
-        # self.first_name = first_name
-        # self.last_name = last_name
-        # self.email = email
-        # self.tel = tel
 
 
 class Table:
@@ -99,16 +99,28 @@ class Table:
     Паттерн DATA MAPPER
     Слой преобразования данных
     """
-    def __init__(self, table_name, fields, create=False):
+
+    def __init__(self, table_name: str, fields: dict = None, create=False):
         self.table_name = table_name
-        self.fields = fields
         self.connection = connection
         self.cursor = connection.cursor()
         if create:
+            self.fields = fields
             self.create_table()
+        else:
+            # self.cursor.execute(
+            #     f'''SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = {table_name};''')
+            self.cursor.execute(
+                f'''SELECT name FROM PRAGMA_TABLE_INFO('{table_name}');''')
+            res = self.cursor.fetchall()
+            self.fields = [str(*column_name) for column_name in res]
+            # print(f'GOT FIELDS: {table_name=} {self.fields}')
 
     def __str__(self):
         return self.table_name
+
+    def add(self, data):
+        Row(self, data).to_create()
 
     def create_table(self):
         self.cursor.execute(f'''SELECT name FROM sqlite_master WHERE type='table' AND name='{self.table_name}';''')
@@ -121,18 +133,46 @@ class Table:
         else:
             print(f'Table {self.table_name} already exist')
 
-    def find_by_id(self, id):
+    def get_by_id(self, id, as_dict: bool = False):
         print(f'Searching for {id} in {self}')
-        result_columns = self.cursor.fetchone()
         statement = f"SELECT * FROM {self.table_name} WHERE ID=?"
         self.cursor.execute(statement, (id,))
         result = self.cursor.fetchone()
-        # print(f'{result=} {result_columns=} ')
-        # print(f'{self.__dict__=}')
+        # print(f'{result=} {result_columns=} {self.__dict__=}')
         if result:
-            r = dict(zip(self.fields, result))
-            # print(f'{r=}')
-            return Row(self, r)
+            if as_dict:
+                return dict(zip(self.fields, result))
+            return Row(self, dict(zip(self.fields, result)))
+        return
+        #     raise Exception(f'record with id={id} not found')
+
+    def get_by(self, column, value, as_dict: bool = False):
+        print(f'Searching for {value} in {self}=>{column}')
+        statement = f"SELECT * FROM {self.table_name} WHERE {column}=?"
+        self.cursor.execute(statement, (value,))
+        result = self.cursor.fetchone()
+        # print(f'{statement=} {value=} {result=} {self.__dict__=}')
+        if result:
+            if as_dict:
+                return dict(zip(self.fields, result))
+            return Row(self, dict(zip(self.fields, result)))
+        return
+
+    def get_list_by(self, column, value, as_dict: bool = False):
+        print(f'Searching for {value} in {self}=>{column}')
+        statement = f"SELECT * FROM {self.table_name} WHERE {column}=?"
+        self.cursor.execute(statement, (value,))
+        result = self.cursor.fetchall()
+        print(f'{statement=} {value=} {result=} {self.__dict__=}')
+        if result:
+            res = []
+            if as_dict:
+                for i in result:
+                    res.append((dict(zip(self.fields, i))))
+                return res
+            for i in result:
+                res.append(Row(self, dict(zip(self.fields, i))))
+            return res
         return
         #     raise Exception(f'record with id={id} not found')
 
@@ -180,7 +220,6 @@ class Table:
         return _statements[:-2], _values
 
 
-
 # with open('patterns.sqlite', 'r') as sqlite_file:
 #     sql_script = sqlite_file.read()
 # person_mapper = Table(connection, 'person')
@@ -217,14 +256,14 @@ if __name__ == '__main__':
         UnitOfWork.new_current()
         users = Table('users', users_fields, True)
 
-        new_person_1 = Row(users, {'username': 'Basil', 'password': 'juAevLtnbBX1ZSzf7VbqHsxwAgRmtNdvLWzpsfEEuzE=',
-                                   'token': '', 'tel': '555-55-55'})
+        users.add({'username': 'Basil', 'password': 'juAevLtnbBX1ZSzf7VbqHsxwAgRmtNdvLWzpsfEEuzE=',
+                   'token': '', 'tel': '555-55-55'})
         # new_person_1.mark_new()
-        new_person_2 = Row(users, {'username': 'Peter', 'password': 'S//u5C6dqSdsWPyTTkXKwzm2CTaExAAnn4UtIcBs3Ho=',
-                                   'token': '', 'tel': '555-55-55'})
+        users.add({'username': 'Peter', 'password': 'S//u5C6dqSdsWPyTTkXKwzm2CTaExAAnn4UtIcBs3Ho=',
+                   'token': '', 'tel': '555-55-55'})
         # new_person_2.mark_new()
         UnitOfWork.get_current().commit()
-        exists_person_1 = users.find_by_id(1)
+        exists_person_1 = users.get_by_id(1)
         # exists_person_1.to_edit()
         print(exists_person_1.username)
 
