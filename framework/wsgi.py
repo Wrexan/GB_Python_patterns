@@ -7,8 +7,6 @@ from framework.responses import Responses
 from framework.front_controller import Middleware
 from views import View
 
-# from database import DB
-# from framework.users import Users
 if path.exists('url.py'):
     from url import links
 else:
@@ -19,15 +17,12 @@ else:
 
 
 class WSGI:
-    # db = DB
-    # users = Users()
 
     def __init__(self):
         self.m_ware = Middleware()
         self.m_wares = settings.MIDDLEWARE
 
     def __call__(self, environ: dict, start_response):
-        # print(f'{self.work=}')
         self.environ = environ
         self.start_response = start_response
 
@@ -43,7 +38,6 @@ class WSGI:
                 self.response = front(self.m_ware, self.request, self.response, self.responser, True)
             # If middleware does not change status - generate answer
             # Else use middleware status
-            # print(f'{self.responser.status=}')
             self.response = self.generate_answer()
             for front in self.m_wares:  # Post front controllers
                 self.response = front(self.m_ware, self.request, self.response, self.responser, False)
@@ -71,11 +65,11 @@ class WSGI:
         self.start_response(self.responser.status, self.responser.headers)
         return [bytes(f'{self.responser.body}', encoding='utf-8')]
 
-    def search_url_and_send(self, source: dict, status_funk: classmethod = None):
-        if status_funk is None:
-            status_funk = self.responser.status_200
+    def search_url_and_send(self, source: dict, status_func: classmethod = None):
+        if status_func is None:
+            status_func = self.responser.status_200
         for custom_url, custom_view in source.items():
             if self.request.path == custom_url:
-                status_funk(self.request, custom_view)
+                status_func(self.request, custom_view)
                 return
 
