@@ -82,14 +82,14 @@ class Users:
             return False
         return True
 
-    @staticmethod
-    def check_user_token(username: str, token: str):
-        _user = db.users.get_by('username', username)
-        if _user:
-            if _user.token == token:
-                return True
-            return False
-        return None
+    # @staticmethod
+    # def check_user_token(username: str, token: str):
+    #     _user = db.users.get_by('username', username)
+    #     if _user:
+    #         if _user.token == token:
+    #             return True
+    #         return False
+    #     return None
         # for user in self.database.users:
         #     if user['username'] == username:
         #         # print(f'check_user_token: {user["username"]=} {user["token"]=}')
@@ -134,7 +134,7 @@ class Users:
                           'token': token,
                           'tel': request.auth['tel'],
                           'email': _email})
-            request.headers_to_send['HTTP_AUTHORIZATION'] = f'{request.auth["username"]}:{token}'
+            request.headers_to_send['HTTP_AUTHORIZATION'] = f'{request.auth["username"].encode("utf-8")}:{token}'
             return True, f'Добро пожаловать на наш проект, {request.auth["username"]}. Приятной учебы.'
         return False, 'Данное имя уже занято.'
 
@@ -144,7 +144,7 @@ class Users:
         auth = request.auth
         if 'username' in auth and 'password' in auth:
             _user = self.get_user(auth['username'])
-            # print(f'{_user=}')
+            print(f'LOGIN_USER: {_user=}')
             if _user:
                 if _user.password == auth['password']:
                     if _user.token == '':
@@ -152,7 +152,7 @@ class Users:
                         _user.to_edit()
                         request.user = _user
 
-                    request.headers_to_send['HTTP_AUTHORIZATION'] = f'{_user.username}:{_user.token}'
+                    request.headers_to_send['HTTP_AUTHORIZATION'] = f'{_user.username.encode("utf-8")}:{_user.token}'
                     return True, f'Здравствуйте, {_user.username}<br>Добро пожаловать на наши курсы'
                 return False, 'Неправильный пароль.'
         return False, 'Аккаунта с таким именем не существует'

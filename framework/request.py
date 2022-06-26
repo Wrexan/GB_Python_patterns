@@ -41,16 +41,41 @@ class Request:
                     headers[key[5:]] = value
         return headers
 
-    def _check_token(self) -> tuple:
-        if self.act in ('login', 'reg'):
-            return True, self.auth['username'], self.users.get_user(self.auth['username'])
+    def _check_token(self) -> tuple[None, None, None] | tuple[bool, str, type(U)]:
         auth = self.env.get('HTTP_AUTHORIZATION')
-        # print(f'{self.act=} {auth=}')
-        if auth and auth.startswith('Bearer ') and ':' in auth[7:]:
-            auth = (auth[7:].split(':'))
-            return self.users.check_user_token(auth[0], auth[1]), auth[0], self.users.get_user(auth[0])
+        print(f'{self.act=} {auth=}')
+        _username, _token = self._parse_auth_header(auth)
+        if _username:
+            _user = self.users.get_user(_username)
+            if _user:
+                if _user.token == _token:
+                    print(f'{_username=}')
+                    return True, _username, _user
+                return False, _username, _user
+
+        elif self.act == 'login':
+            _user = self.users.get_user(self.auth['username'])
+            if _user:
+                return True, self.auth['username'], _user
+
+        elif self.act == 'reg':
+            _user = self.users.get_user(self.auth['username'])
+            if not _user:
+                return True, self.auth['username'], self.users.get_user(self.auth['username'])
+
         return None, None, None
 
+    @staticmethod
+    def _parse_auth_header(auth) -> tuple[None, None] | tuple[str, str]:
+        if auth:
+            if auth.startswith("Bearer b'") and ':' in auth[9:]:
+                _username, _token = (auth[9:].split(':'))
+                _username = _username[:-1]
+                return _username, _token
+            elif auth.startswith("Bearer ") and ':' in auth[7:]:
+                _username, _token = (auth[7:].split(':'))
+                return _username, _token
+        return None, None
     # def _get_login(self, parsed_body):
     #     try:
     #         auth_params = {}
