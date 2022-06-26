@@ -24,7 +24,7 @@ class Request:
 
     def _get_http_headers(self) -> dict:
         headers = {}
-        debug = 1
+        debug = 0
         if debug:
             print('-' * 80)
             for key, value in self.env.items():
@@ -43,13 +43,13 @@ class Request:
 
     def _check_token(self) -> tuple[None, None, None] | tuple[bool, str, type(U)]:
         auth = self.env.get('HTTP_AUTHORIZATION')
-        print(f'{self.act=} {auth=}')
+        # print(f'{self.act=} {auth=}')
         _username, _token = self._parse_auth_header(auth)
         if _username:
             _user = self.users.get_user(_username)
             if _user:
                 if _user.token == _token:
-                    print(f'{_username=}')
+                    # print(f'{_username=}')
                     return True, _username, _user
                 return False, _username, _user
 
