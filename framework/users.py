@@ -125,6 +125,8 @@ class Users:
                 request.auth['tel'] == '':
             print(f'ERROR on register: В запросе отсутствует(ют) поля : {request.auth=}')
             return False, f'Заполните обязательные поля'
+        if not self.has_allowed_symbols(request.auth['username']):
+            return False, 'Недопустимые символы в имени<br>Используйте инглиш'
         _user = db.users.get_by('username', (request.auth['username']))
         if not _user:
             _email = request.auth['email'] if 'email' in request.auth else ''
@@ -134,25 +136,25 @@ class Users:
                           'token': token,
                           'tel': request.auth['tel'],
                           'email': _email})
-            request.headers_to_send['HTTP_AUTHORIZATION'] = f'{request.auth["username"].encode("utf-8")}:{token}'
+            request.headers_to_send['HTTP_AUTHORIZATION'] = f'{request.auth["username"]}:{token}'
             return True, f'Добро пожаловать на наш проект, {request.auth["username"]}. Приятной учебы.'
         return False, 'Данное имя уже занято.'
 
     def login_user(self, request, reg_login: bool = False):
         # print(f'{request.auth=} {type(request.auth)=}')
-        # auth = request.reg if reg_login else request.auth
-        auth = request.auth
-        if 'username' in auth and 'password' in auth:
-            _user = self.get_user(auth['username'])
-            print(f'LOGIN_USER: {_user=}')
+        if 'username' in request.auth and 'password' in request.auth:
+            if not self.has_allowed_symbols(request.auth['username']):
+                return False, 'Недопустимые символы в имени<br>Используйте инглиш'
+            _user = self.get_user(request.auth['username'])
             if _user:
-                if _user.password == auth['password']:
+                if _user.password == request.auth['password']:
+                    print(f'LOGIN_USER: {_user.username}')
                     if _user.token == '':
                         _user.token = str(token_hex(16))
                         _user.to_edit()
                         request.user = _user
 
-                    request.headers_to_send['HTTP_AUTHORIZATION'] = f'{_user.username.encode("utf-8")}:{_user.token}'
+                    request.headers_to_send['HTTP_AUTHORIZATION'] = f'{_user.username}:{_user.token}'
                     return True, f'Здравствуйте, {_user.username}<br>Добро пожаловать на наши курсы'
                 return False, 'Неправильный пароль.'
         return False, 'Аккаунта с таким именем не существует'
@@ -167,6 +169,10 @@ class Users:
                 request.verified = None
             except Exception as e:
                 print(f'Не удалось разлогинить аккаунт {request.username} по причине: {e}')
+
+    @staticmethod
+    def has_allowed_symbols(string, lim1: int = 45, lim2: int = 126):
+        return all(lim1 <= ord(c) <= lim2 for c in string)
 
 
 U = Users()
