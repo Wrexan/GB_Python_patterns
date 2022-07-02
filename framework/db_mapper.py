@@ -101,10 +101,8 @@ class Row(DomainObject):
 
 class Table:
     """
-    Паттерн DATA MAPPER
-    Слой преобразования данных
+    DATA MAPPER
     """
-
     def __init__(self, table_name: str = None, template: type(NewTable) = None, create=False):
         try:
             self.connection = connection
@@ -177,31 +175,9 @@ class Table:
                                         f'Unknown value type of {_key}: {type(_val)} = {_val}')
 
             print(f'Creating table {self.table_name}:\nCREATE TABLE {_table_string[:-1]}')
-            # self.fields = self.table_template.__dict__
-            # print(f'{self.table_template.__dict__=} and {self.fields=}')
-            # for _field in self.table_template
-            # self.cursor.execute(
-            #     f"CREATE TABLE {self.table_name}({','.join('{} {}'.format(*i) for i in self.fields.items())});")
-            # self.cursor.execute(
-            #     f'CREATE TABLE {self.table_name}'
-            #     f'({",".join("{} {}".format(k, i) for k, i in self.fields.items()
-            #     if not k.startswith("__") and k != "table_name")});')
             self._safe_execute(f'CREATE TABLE {self.table_name}({_table_string[:-1]});')
-            # self.cursor.execute(
-            #     f'CREATE TABLE {self.table_name}({_table_string[:-1]});')
         else:
             print(f'Table {self.table_name} already exist')
-
-    # def create_table(self):
-    #     self.cursor.execute(f'''SELECT name FROM sqlite_master WHERE type='table' AND name='{self.table_name}';''')
-    #     table = self.cursor.fetchone()
-    #     if not table:  # and self.cursor.fetchone()[0] == 0:
-    #         print(f'Creating table {self.table_name}="{",".join("{} {}".format(*i) for i in self.fields.items())}"')
-    #
-    #         self.cursor.execute(
-    #             f"CREATE TABLE {self.table_name}({','.join('{} {}'.format(*i) for i in self.fields.items())});")
-    #     else:
-    #         print(f'Table {self.table_name} already exist')
 
     def get_by_id(self, id, as_dict: bool = False):
         print(f'Searching for {id} in {self}')
@@ -326,65 +302,44 @@ class Table:
         return _statements[:-2], _values
 
 
-# with open('patterns.sqlite', 'r') as sqlite_file:
-#     sql_script = sqlite_file.read()
-# person_mapper = Table(connection, 'person')
-
-
-# TEST
-if __name__ == '__main__':
-    # person1 = Person('Vasa', 'Pupken')
-    # person2 = Person('Petia', 'Piatochkin')
-    # person_mapper.insert(person1)
-    # person_mapper.insert(person2)
-    # person_1 = person_mapper.find_by_id(1)
-    # person_2 = person_mapper.find_by_id(2)
-    # print(person_1.__dict__)
-    # print(person_2.__dict__)
-
-    # users_fields = '''
-    #     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
-    #     username VARCHAR (32) NOT NULL UNIQUE,
-    #     password VARCHAR (44) NOT NULL,
-    #     token VARCHAR (32),
-    #     tel VARCHAR (16)
-    #     '''
-
-    users_fields = {
-        'id': 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE',
-        'username': 'VARCHAR (32) NOT NULL UNIQUE',
-        'password': 'VARCHAR (44) NOT NULL',
-        'token': 'VARCHAR (32)',
-        'tel': 'VARCHAR (16)'
-    }
-
-    try:
-        UnitOfWork.new_current()
-        users = Table('users', users_fields, True)
-
-        users.add({'username': 'Basil', 'password': 'juAevLtnbBX1ZSzf7VbqHsxwAgRmtNdvLWzpsfEEuzE=',
-                   'token': '', 'tel': '555-55-55'})
-        # new_person_1.mark_new()
-        users.add({'username': 'Peter', 'password': 'S//u5C6dqSdsWPyTTkXKwzm2CTaExAAnn4UtIcBs3Ho=',
-                   'token': '', 'tel': '555-55-55'})
-        # new_person_2.mark_new()
-        UnitOfWork.get_current().commit()
-        exists_person_1 = users.get_by_id(1)
-        # exists_person_1.to_edit()
-        print(exists_person_1.username)
-
-        UnitOfWork.new_current()
-        exists_person_1.username += ' Senior'
-        print(exists_person_1.username)
-        exists_person_1.to_edit()
-        # exists_person_2 = persons.find_by_id(2)
-        # exists_person_2.mark_removed()
-        print(UnitOfWork.get_current().__dict__)
-        UnitOfWork.get_current().commit()
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print(f'{fname}[{exc_tb.tb_lineno}]ERROR: {UnitOfWork.get_current()=} {e.args}')
-    finally:
-        UnitOfWork.set_current(None)
-        print(UnitOfWork.get_current())
+# TEST (outdated)
+# if __name__ == '__main__':
+#
+#     users_fields = {
+#         'id': 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE',
+#         'username': 'VARCHAR (32) NOT NULL UNIQUE',
+#         'password': 'VARCHAR (44) NOT NULL',
+#         'token': 'VARCHAR (32)',
+#         'tel': 'VARCHAR (16)'
+#     }
+#
+#     try:
+#         UnitOfWork.new_current()
+#         users = Table('users', users_fields, True)
+#
+#         users.add({'username': 'Basil', 'password': 'juAevLtnbBX1ZSzf7VbqHsxwAgRmtNdvLWzpsfEEuzE=',
+#                    'token': '', 'tel': '555-55-55'})
+#         # new_person_1.mark_new()
+#         users.add({'username': 'Peter', 'password': 'S//u5C6dqSdsWPyTTkXKwzm2CTaExAAnn4UtIcBs3Ho=',
+#                    'token': '', 'tel': '555-55-55'})
+#         # new_person_2.mark_new()
+#         UnitOfWork.get_current().commit()
+#         exists_person_1 = users.get_by_id(1)
+#         # exists_person_1.to_edit()
+#         print(exists_person_1.username)
+#
+#         UnitOfWork.new_current()
+#         exists_person_1.username += ' Senior'
+#         print(exists_person_1.username)
+#         exists_person_1.to_edit()
+#         # exists_person_2 = persons.find_by_id(2)
+#         # exists_person_2.mark_removed()
+#         print(UnitOfWork.get_current().__dict__)
+#         UnitOfWork.get_current().commit()
+#     except Exception as e:
+#         exc_type, exc_obj, exc_tb = sys.exc_info()
+#         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+#         print(f'{fname}[{exc_tb.tb_lineno}]ERROR: {UnitOfWork.get_current()=} {e.args}')
+#     finally:
+#         UnitOfWork.set_current(None)
+#         print(UnitOfWork.get_current())

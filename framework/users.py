@@ -82,40 +82,14 @@ class Users:
             return False
         return True
 
-    # @staticmethod
-    # def check_user_token(username: str, token: str):
-    #     _user = db.users.get_by('username', username)
-    #     if _user:
-    #         if _user.token == token:
-    #             return True
-    #         return False
-    #     return None
-        # for user in self.database.users:
-        #     if user['username'] == username:
-        #         # print(f'check_user_token: {user["username"]=} {user["token"]=}')
-        #         if user['token'] == token:
-        #             return True
-        #         return False
-        # return None
-
-    # def get_user_max_id(self, username):
-    #     max_id = 1
-    #     for user in self.database.users:
-    #         max_id = max(max_id, user['id'])
-    #         if user['username'] == username:
-    #             return user, max_id
-    #     return None, max_id
-
     def get_user(self, username: str):
         user = db.users.get_by('username', username)
-        # for user in self.database.users:
         if user:
             return user
         return None
 
     def create_user_from_request(self, request):
         # print(f'{request.body=} {username=}')
-        # if 'username' in request.auth and 'password' in request.auth:
         if request.auth is None or \
                 'username' not in request.auth or \
                 request.auth['username'] == '' \

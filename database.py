@@ -2,12 +2,6 @@ from framework import db_mapper
 
 
 class Database:
-    # db_mapper.UnitOfWork.new_current()
-    # users = db_mapper.Table('users')
-    # courses = db_mapper.Table('courses')
-    # lines = db_mapper.Table('lines')
-    # types = db_mapper.Table('line_types')
-
     def __init__(self):
         db_mapper.UnitOfWork.new_current()
         self.users = db_mapper.Table('users')
