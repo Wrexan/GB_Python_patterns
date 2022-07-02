@@ -12,13 +12,13 @@ class Request:
         self.headers = self._get_http_headers()
         self.method = environ.get('REQUEST_METHOD')
         self.body = self._parse_post_query_params()
-        print(f'BODY: {self.body}')
+        # print(f'BODY: {self.body}')
         self.query_params = self._get_get_query_params(environ)
         self.path = self._get_clean_path()
-        print(f'REQ_PATH: {self.path}')
+        # print(f'REQ_PATH: {self.path}')
         self.client_ip4 = environ.get('REMOTE_ADDR')
         self.verified, self.username, self.user = self._check_token()  # True, username, user
-        print(f'VERIFIED: {self.verified} {self.username=} {self.user=}')
+        # print(f'VERIFIED: {self.verified} {self.username=} {self.user=}')
         self.headers_to_send = {}  # If name/pass verified on login? then Bearer
         self.origin = environ.get('HTTP_ORIGIN')
 

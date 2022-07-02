@@ -1,16 +1,6 @@
 from framework import db_mapper as db
 
 
-# users_fields = {
-#     'id': 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE',
-#     'username': 'VARCHAR (32) NOT NULL UNIQUE',
-#     'password': 'VARCHAR (44) NOT NULL',
-#     'token': 'VARCHAR (32)',
-#     'tel': 'VARCHAR (16)',
-#     'email': 'VARCHAR (32)'
-# }
-
-
 class UsersTable(db.NewTable):
     id = 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE'
     username = 'VARCHAR (32) NOT NULL UNIQUE'
@@ -26,17 +16,6 @@ users_data = [
     {'username': 'Peter', 'password': 'S//u5C6dqSdsWPyTTkXKwzm2CTaExAAnn4UtIcBs3Ho=', 'token': '',
      'tel': '555-55-55'},
 ]
-
-
-# courses_fields = {
-#     'id': 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE',
-#     'line': 'SMALLINT NOT NULL',
-#     'name': 'VARCHAR (64) NOT NULL',
-#     'img': 'VARCHAR (64)',
-#     'type': 'TINYINT',
-#     'short': 'VARCHAR (64)',
-#     'text': 'TEXT'
-# }
 
 
 class CoursesTable(db.NewTable):
@@ -127,19 +106,6 @@ courses_data = [
 ]
 
 
-# courses_users_fields = {
-#     'id': 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE',
-#     'course_id': 'INTEGER NOT NULL',
-#     'user_id': 'INTEGER NOT NULL',
-#     'FK_course_id': {'NAME': 'CONSTRAINT',
-#                      'FOREIGN KEY': 'course_id',
-#                      'REFERENCES': {'courses': 'id'}},
-#     'CONSTRAINT': {'NAME': 'FK_course_id',
-#                    'FOREIGN KEY': 'course_id',
-#                    'REFERENCES': {'courses': 'id'}}
-# }
-
-
 class CourseUsersTable(db.NewTable):
     # id = 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE'
     course_id = 'INTEGER NOT NULL'
@@ -173,13 +139,6 @@ course_types_data = [
     {'id': 1, 'name': 'онлайн'},
     {'id': 2, 'name': 'офлайн'},
 ]
-
-# course_lines_fields = {
-#     'id': 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE',
-#     'parent': 'INTEGER',
-#     'courses_in': 'INTEGER',
-#     'name': 'VARCHAR (64)'
-# }
 
 
 class LinesTable(db.NewTable):
@@ -216,11 +175,6 @@ lines_data = [
     {'id': 19, 'parent': 6, 'courses_in': 0, 'name': 'C'},
     {'id': 20, 'parent': 6, 'courses_in': 0, 'name': 'C++'},
 ]
-
-
-# def insert_data_to_rows(table, data):
-#     for elem in data:
-#         table.add(elem)
 
 
 db.UnitOfWork.new_current()

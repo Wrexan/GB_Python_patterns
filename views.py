@@ -15,16 +15,9 @@ FRONTEND_CONST = {
     '%profile%': '/profile/',
     '%admin%': '/admin/',
 }
-# Objects visible only for admin
-# FRONTEND_ADMIN_VARS = {
-#     '%admin_page%': '"/admin_page"',
-#     '%admin_panel%': 'Админка'
-# }
-
 
 Site = View(FRONTEND_CONST)
 db = DB
-# db.db_precount_courses_for_lines()
 
 users = U
 Site.is_admin = True  # todo
@@ -77,7 +70,6 @@ def courses(request):
                 return Site.view(request, 'index.html', {'content': 'courses/course_page.html',
                                                          'course': course,
                                                          'applied': applied})
-                # request.query_params["courses/course_page"])
 
             elif 'enroll_course' in request.query_params:
                 if not request.verified:
@@ -115,8 +107,6 @@ def courses(request):
                     curr_line_name = curr_line.name
                 else:
                     line = '0'
-            # else:
-            #     line = '0'
         if line == '0':
             courses_in = 0
         else:
@@ -175,9 +165,6 @@ def admin(request):
                                                  'users_c': users_c_dict,
                                                  'users_amt': users_on_page,
                                                  })
-    # elif request.method == 'POST':
-    #     page = Site.view('index.html', {'content': 'admin_page.html'})
-    #     print(f'==Got {request.method=} {request.query_params=} {request.body=}')
     return page
 
 
@@ -206,17 +193,6 @@ def logout(request):
     if request.method == 'GET':
         users.logout_user(request)
         return Site.view(request, 'index.html', {'content': 'main_page.html'})
-    # elif request.method == 'POST':
-    #     if request.act == 'login':
-    #         ok, msg = users.login_user(request)
-    #         if ok:
-    #             return Site.view(request, 'index.html', {'content': 'main_page.html',
-    #                                                      'msg': msg}, )
-    #         else:
-    #             return Site.view(request, 'index.html', {'content': 'login.html',
-    #                                                      'msg': msg}, )
-    #     else:
-    #         return Site.view(request, 'index.html', {'content': 'login.html'})
     return f'unsupported method {request.method}'
 
 
